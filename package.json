@@ -1,0 +1,13 @@
+{
+  "name": "voo-da-abelha",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/dev-server.mjs",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.4"
+  }
+}

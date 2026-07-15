@@ -1,0 +1,3 @@
+# Controle da abelha por movimento vertical livre, não por impulso/gravidade
+
+O pedido original citava o Flappy Bird como referência, cujo controle clássico é um impulso para cima disparado a cada toque, com gravidade puxando para baixo continuamente. Decidimos usar movimento vertical livre em vez disso: segurar move a abelha suavemente para cima, soltar desce. A escolha é deliberada — resulta em um controle mais previsível e menos punitivo — mas diverge da mecânica que inspirou o pedido, então registramos aqui para que não seja "corrigida" de volta para gravidade/impulso por engano no futuro.
