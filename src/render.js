@@ -36,6 +36,31 @@ function drawBarrier(ctx, barrier) {
 
   const gapBottom = barrierGapBottom(barrier);
   ctx.fillRect(barrier.x, gapBottom, BARRIER_WIDTH, CANVAS_HEIGHT - gapBottom);
+
+  const centerX = barrier.x + BARRIER_WIDTH / 2;
+  drawFlower(ctx, centerX, barrier.gapTop);
+  drawFlower(ctx, centerX, gapBottom);
+}
+
+function drawFlower(ctx, x, y) {
+  const petalRadius = 6;
+  const petalDistance = 7;
+  const petalCount = 5;
+
+  ctx.fillStyle = "#ffb3c6";
+  for (let i = 0; i < petalCount; i++) {
+    const angle = (i / petalCount) * Math.PI * 2;
+    const petalX = x + Math.cos(angle) * petalDistance;
+    const petalY = y + Math.sin(angle) * petalDistance;
+    ctx.beginPath();
+    ctx.arc(petalX, petalY, petalRadius, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.fillStyle = "#ffe066";
+  ctx.beginPath();
+  ctx.arc(x, y, petalRadius * 0.8, 0, Math.PI * 2);
+  ctx.fill();
 }
 
 function drawBee(ctx, beeY) {
