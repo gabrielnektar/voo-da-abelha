@@ -7,6 +7,13 @@ const CLOUD_COLOR = "#ffffff";
 const CLOUD_SPACING = 260;
 const CLOUD_PARALLAX_FACTOR = 0.5;
 const CLOUD_Y_POSITIONS = [60, 320, 160, 260, 100, 380];
+const POLLEN_COLOR = "rgba(255, 224, 102, 0.85)";
+const POLLEN_RADIUS = 3;
+const POLLEN_SPACING = 70;
+const POLLEN_PARALLAX_FACTOR = 0.8;
+const POLLEN_APPEAR_CHANCE = 0.35;
+const POLLEN_BOB_SPEED = 2;
+const POLLEN_BOB_RANGE = 10;
 const FLOWER_PETAL_COLORS = ["#ffb3c6", "#c9a0ff", "#ffb26b", "#a0d8ff", "#ff8fa3"];
 const FLOWER_SPACING = 38;
 const FLOWER_SIDE_OFFSET = 10;
@@ -16,6 +23,7 @@ export function render(ctx, state, record) {
   ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
   drawClouds(ctx, state.scrollX);
+  drawPollen(ctx, state.scrollX, state.elapsedTime);
   state.barriers.forEach((barrier) => drawBarrier(ctx, barrier));
   drawBee(ctx, state.beeY, state.elapsedTime);
   drawScore(ctx, state.score);
@@ -47,6 +55,39 @@ function drawCloud(ctx, x, y) {
   ctx.arc(x + 18, y - 8, 20, 0, Math.PI * 2);
   ctx.arc(x + 38, y, 16, 0, Math.PI * 2);
   ctx.fill();
+}
+
+// Occasional drifting pollen specks: most tile slots are skipped (only
+// POLLEN_APPEAR_CHANCE of them draw anything), each visible speck's position
+// and bob phase come from a seeded pseudoRandom(tile) so they stay stable —
+// not reshuffled every frame — while gently bobbing via elapsedTime.
+function drawPollen(ctx, scrollX, elapsedTime) {
+  const parallaxX = scrollX * POLLEN_PARALLAX_FACTOR;
+  const firstTile = Math.floor((parallaxX - POLLEN_SPACING) / POLLEN_SPACING);
+  const lastTile = Math.ceil((parallaxX + CANVAS_WIDTH + POLLEN_SPACING) / POLLEN_SPACING);
+
+  ctx.fillStyle = POLLEN_COLOR;
+  for (let tile = firstTile; tile <= lastTile; tile++) {
+    if (pseudoRandom(tile) > POLLEN_APPEAR_CHANCE) {
+      continue;
+    }
+
+    const screenX = tile * POLLEN_SPACING - parallaxX;
+    const baseY = pseudoRandom(tile * 7 + 3) * CANVAS_HEIGHT;
+    const bobPhase = pseudoRandom(tile * 13 + 1) * Math.PI * 2;
+    const y = baseY + Math.sin(elapsedTime * POLLEN_BOB_SPEED + bobPhase) * POLLEN_BOB_RANGE;
+
+    ctx.beginPath();
+    ctx.arc(screenX, y, POLLEN_RADIUS, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+// Cheap deterministic pseudo-random in [0, 1) seeded by an integer, so the
+// same tile index always yields the same value across frames.
+function pseudoRandom(seed) {
+  const x = Math.sin(seed * 12.9898) * 43758.5453;
+  return x - Math.floor(x);
 }
 
 function drawBarrier(ctx, barrier) {
