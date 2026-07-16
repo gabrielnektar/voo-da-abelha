@@ -487,6 +487,10 @@ function drawFlower(ctx, x, y, petalColor) {
 
 const WING_FLAP_SPEED = 14;
 const WING_COLOR = "rgba(255, 255, 255, 0.8)";
+const BEE_EMOJI_INTERVAL = 5;
+const BEE_EMOJI_DURATION = 1.4;
+const BEE_EMOJI_RISE = 40;
+const BEE_EMOJIS = ["✨", "🍯", "🌸", "💛", "⭐", "🎵"];
 
 function drawBee(ctx, beeY, elapsedTime) {
   drawWings(ctx, beeY, elapsedTime);
@@ -517,6 +521,33 @@ function drawBee(ctx, beeY, elapsedTime) {
     Math.PI * 2,
   );
   ctx.fill();
+
+  drawBeeEmoji(ctx, beeY, elapsedTime);
+}
+
+// Just a bit of fun, doesn't affect gameplay: every BEE_EMOJI_INTERVAL
+// seconds of elapsedTime, a random emoji floats up from the bee and fades
+// out over BEE_EMOJI_DURATION. Fully deterministic (pseudoRandom keyed by
+// which interval we're in), so it's stable across frames rather than
+// re-rolling randomly every render call.
+function drawBeeEmoji(ctx, beeY, elapsedTime) {
+  const cycleIndex = Math.floor(elapsedTime / BEE_EMOJI_INTERVAL);
+  const timeInCycle = elapsedTime - cycleIndex * BEE_EMOJI_INTERVAL;
+
+  if (timeInCycle >= BEE_EMOJI_DURATION) {
+    return;
+  }
+
+  const progress = timeInCycle / BEE_EMOJI_DURATION;
+  const emoji = BEE_EMOJIS[Math.floor(pseudoRandom(cycleIndex) * BEE_EMOJIS.length)];
+  const sideJitter = (pseudoRandom(cycleIndex * 7 + 3) - 0.5) * 16;
+
+  ctx.save();
+  ctx.globalAlpha = 1 - progress;
+  ctx.font = "20px sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText(emoji, BEE_X + sideJitter, beeY - BEE_RADIUS - 10 - progress * BEE_EMOJI_RISE);
+  ctx.restore();
 }
 
 // Wings flap via a sine wave driven by elapsedTime, which freezes when the
