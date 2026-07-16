@@ -324,9 +324,9 @@ const BARRIER_RIM_COLOR = "#256e30";
 
 const BONUS_POLLEN_COLOR = "#ffe066";
 const BONUS_POLLEN_GLOW_COLOR = "rgba(255, 224, 102, 0.35)";
-const BONUS_BURST_DURATION = 0.5;
-const BONUS_BURST_PARTICLE_COUNT = 8;
-const BONUS_BURST_DISTANCE = 30;
+const BONUS_BURST_DURATION = 0.7;
+const BONUS_BURST_PARTICLE_COUNT = 14;
+const BONUS_BURST_DISTANCE = 60;
 
 function drawBarrier(ctx, barrier, elapsedTime) {
   const gradient = createBarrierGradient(ctx, barrier);
@@ -431,7 +431,7 @@ function drawBonusPollen(ctx, x, y, elapsedTime) {
 // once right after the bonus pollen is collected (progress goes 0 → 1).
 function drawBonusBurst(ctx, x, y, progress) {
   const distance = BONUS_BURST_DISTANCE * progress;
-  const particleRadius = BONUS_POLLEN_RADIUS * 0.4 * (1 - progress);
+  const particleRadius = BONUS_POLLEN_RADIUS * 0.6 * (1 - progress);
   const alpha = 1 - progress;
 
   ctx.fillStyle = `rgba(255, 224, 102, ${alpha})`;

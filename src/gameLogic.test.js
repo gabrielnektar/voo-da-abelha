@@ -89,8 +89,8 @@ describe("update", () => {
 
     expect(next.barriers.length).toBe(1);
     expect(next.barriers[0].x).toBe(480);
-    expect(next.barriers[0].gapHeight).toBe(210);
-    expect(next.barriers[0].gapTop).toBe(215);
+    expect(next.barriers[0].gapHeight).toBe(205);
+    expect(next.barriers[0].gapTop).toBe(217.5);
   });
 
   test("avança as barreiras existentes da direita para a esquerda", () => {
@@ -127,7 +127,7 @@ describe("update", () => {
     expect(next.barriers.length).toBe(2);
     expect(next.barriers[0].x).toBe(207);
     expect(next.barriers[1].x).toBe(480);
-    expect(next.barriers[1].gapTop).toBe(197.5);
+    expect(next.barriers[1].gapTop).toBe(198.75);
   });
 
   test("encerra a run quando a abelha colide com a parte sólida de uma barreira", () => {
@@ -259,8 +259,8 @@ describe("update", () => {
 
     const next = update(state, { holding: false }, 0.1, () => 0.5);
 
-    expect(next.barriers[0].gapHeight).toBe(180);
-    expect(next.barriers[0].gapTop).toBe(230);
+    expect(next.barriers[0].gapHeight).toBe(175);
+    expect(next.barriers[0].gapTop).toBe(232.5);
   });
 
   test("a abertura chega ao tamanho normal depois do período de encolhimento", () => {
@@ -276,8 +276,8 @@ describe("update", () => {
 
     const next = update(state, { holding: false }, 0.1, () => 0.5);
 
-    expect(next.barriers[0].gapHeight).toBe(150);
-    expect(next.barriers[0].gapTop).toBe(245);
+    expect(next.barriers[0].gapHeight).toBe(145);
+    expect(next.barriers[0].gapTop).toBe(247.5);
   });
 
   test("a cada 3 barreiras, a terceira nasce com uma abertura bônus", () => {
@@ -297,7 +297,7 @@ describe("update", () => {
 
     expect(next.barriersSpawned).toBe(3);
     expect(next.barriers[0].bonusSide).toBe("top");
-    expect(next.barriers[0].bonusGapTop).toBe(37.5);
+    expect(next.barriers[0].bonusGapTop).toBe(41.25);
     expect(next.barriers[0].bonusCollected).toBe(false);
   });
 
@@ -354,7 +354,7 @@ describe("update", () => {
     expect(next.gameOver).toBe(true);
   });
 
-  test("tocar o pólen bônus dá 20 pontos e marca a barreira como coletada", () => {
+  test("tocar o pólen bônus dá 100 pontos e marca a barreira como coletada", () => {
     const state = {
       beeY: 125,
       scrollX: 0,
@@ -369,7 +369,7 @@ describe("update", () => {
 
     const next = update(state, { holding: false }, 0, () => 0.5);
 
-    expect(next.score).toBe(20);
+    expect(next.score).toBe(100);
     expect(next.barriers[0].bonusCollected).toBe(true);
   });
 
@@ -395,7 +395,7 @@ describe("update", () => {
     const state = {
       beeY: 68,
       scrollX: 0,
-      score: 20,
+      score: 100,
       elapsedTime: 0,
       gameOver: false,
       barriersSpawned: 0,
@@ -406,7 +406,7 @@ describe("update", () => {
 
     const next = update(state, { holding: false }, 0, () => 0.5);
 
-    expect(next.score).toBe(20);
+    expect(next.score).toBe(100);
   });
 
   test("a nova abertura fica dentro do alcance vertical da anterior", () => {
@@ -421,7 +421,7 @@ describe("update", () => {
         {
           x: 200,
           gapTop: 60,
-          gapHeight: 166,
+          gapHeight: 161,
           bonusSide: null,
           bonusGapTop: null,
           bonusCollected: false,
@@ -441,6 +441,6 @@ describe("update", () => {
 
     const next = update(state, { holding: false }, 0.1, () => 1);
 
-    expect(next.barriers[0].gapTop).toBe(370);
+    expect(next.barriers[0].gapTop).toBe(375);
   });
 });
