@@ -121,6 +121,9 @@ const BARRIER_RIM_COLOR = "#256e30";
 
 const BONUS_POLLEN_COLOR = "#ffe066";
 const BONUS_POLLEN_GLOW_COLOR = "rgba(255, 224, 102, 0.35)";
+const BONUS_BURST_DURATION = 0.5;
+const BONUS_BURST_PARTICLE_COUNT = 8;
+const BONUS_BURST_DISTANCE = 30;
 
 function drawBarrier(ctx, barrier, elapsedTime) {
   const gradient = createBarrierGradient(ctx, barrier);
@@ -157,8 +160,17 @@ function drawBarrier(ctx, barrier, elapsedTime) {
   drawFlowerColumn(ctx, centerX, 0, barrier.gapTop, barrier, 0);
   drawFlowerColumn(ctx, centerX, gapBottom, CANVAS_HEIGHT, barrier, 100);
 
-  if (bonusHole && !barrier.bonusCollected) {
-    drawBonusPollen(ctx, centerX, (bonusHole.top + bonusHole.bottom) / 2, elapsedTime);
+  if (bonusHole) {
+    const pollenY = (bonusHole.top + bonusHole.bottom) / 2;
+
+    if (!barrier.bonusCollected) {
+      drawBonusPollen(ctx, centerX, pollenY, elapsedTime);
+    } else if (barrier.bonusCollectedAt !== null) {
+      const timeSinceCollected = elapsedTime - barrier.bonusCollectedAt;
+      if (timeSinceCollected < BONUS_BURST_DURATION) {
+        drawBonusBurst(ctx, centerX, pollenY, timeSinceCollected / BONUS_BURST_DURATION);
+      }
+    }
   }
 }
 
@@ -210,6 +222,24 @@ function drawBonusPollen(ctx, x, y, elapsedTime) {
   ctx.beginPath();
   ctx.arc(x, y, BONUS_POLLEN_RADIUS, 0, Math.PI * 2);
   ctx.fill();
+}
+
+// A little burst of pollen specks flying outward and fading out, played
+// once right after the bonus pollen is collected (progress goes 0 → 1).
+function drawBonusBurst(ctx, x, y, progress) {
+  const distance = BONUS_BURST_DISTANCE * progress;
+  const particleRadius = BONUS_POLLEN_RADIUS * 0.4 * (1 - progress);
+  const alpha = 1 - progress;
+
+  ctx.fillStyle = `rgba(255, 224, 102, ${alpha})`;
+  for (let i = 0; i < BONUS_BURST_PARTICLE_COUNT; i++) {
+    const angle = (i / BONUS_BURST_PARTICLE_COUNT) * Math.PI * 2;
+    const particleX = x + Math.cos(angle) * distance;
+    const particleY = y + Math.sin(angle) * distance;
+    ctx.beginPath();
+    ctx.arc(particleX, particleY, particleRadius, 0, Math.PI * 2);
+    ctx.fill();
+  }
 }
 
 // Flowers spaced along the column's whole extent (not just the gap edge),

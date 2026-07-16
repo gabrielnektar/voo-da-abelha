@@ -373,6 +373,24 @@ describe("update", () => {
     expect(next.barriers[0].bonusCollected).toBe(true);
   });
 
+  test("marca o instante em que o pólen bônus foi coletado", () => {
+    const state = {
+      beeY: 125,
+      scrollX: 0,
+      score: 0,
+      elapsedTime: 5,
+      gameOver: false,
+      barriersSpawned: 0,
+      barriers: [
+        { x: 70, gapTop: 210, gapHeight: 220, bonusSide: "top", bonusGapTop: 50, bonusCollected: false },
+      ],
+    };
+
+    const next = update(state, { holding: false }, 0, () => 0.5);
+
+    expect(next.barriers[0].bonusCollectedAt).toBe(5);
+  });
+
   test("não dá o bônus de novo depois que o pólen já foi coletado", () => {
     const state = {
       beeY: 68,

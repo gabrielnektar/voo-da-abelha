@@ -59,7 +59,7 @@ export function update(state, input, dt, random = Math.random) {
     state.barriersSpawned,
   );
   const barriersSpawned = state.barriersSpawned + (barrierUpdate.spawnedNewBarrier ? 1 : 0);
-  const { barriers, bonusPoints } = collectBonusPollen(bounds.beeY, barrierUpdate.barriers);
+  const { barriers, bonusPoints } = collectBonusPollen(bounds.beeY, barrierUpdate.barriers, elapsedTime);
   const gameOver = bounds.hitBoundary || hitsAnyBarrier(bounds.beeY, barriers);
 
   return {
@@ -130,7 +130,7 @@ export function bonusHoleBounds(barrier) {
   return { top: barrier.bonusGapTop, bottom: barrier.bonusGapTop + BONUS_GAP_HEIGHT };
 }
 
-function collectBonusPollen(beeY, barriers) {
+function collectBonusPollen(beeY, barriers, elapsedTime) {
   let bonusPoints = 0;
 
   const updatedBarriers = barriers.map((barrier) => {
@@ -139,7 +139,7 @@ function collectBonusPollen(beeY, barriers) {
     }
 
     bonusPoints += BONUS_POLLEN_POINTS;
-    return { ...barrier, bonusCollected: true };
+    return { ...barrier, bonusCollected: true, bonusCollectedAt: elapsedTime };
   });
 
   return { barriers: updatedBarriers, bonusPoints };
@@ -193,6 +193,7 @@ function spawnBarrier(random, elapsedTime, hasBonus) {
     bonusSide: null,
     bonusGapTop: null,
     bonusCollected: false,
+    bonusCollectedAt: null,
   };
 
   return hasBonus ? { ...barrier, ...spawnBonusPollen(random, gapTop, gapHeight) } : barrier;
