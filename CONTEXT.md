@@ -16,12 +16,20 @@ _Avoid_: Player, personagem, protagonista
 Par de colunas verticais com uma abertura, posicionado ao longo do percurso horizontal. A abelha deve passar pela abertura sem tocar as colunas. Gerada em intervalos horizontais regulares, com a posição vertical da abertura aleatória. O tamanho da abertura é maior nas barreiras geradas no início da run, encolhendo gradualmente até um tamanho normal — cada barreira mantém o tamanho de abertura com que nasceu.
 _Avoid_: Obstáculo, cano, pipe
 
+**Abertura bônus**:
+Uma segunda abertura, menor que a principal, presente a cada 3 barreiras (a 3ª, 6ª, 9ª...), cortada em um dos dois segmentos sólidos daquela barreira (escolhido aleatoriamente). Assim como a abertura principal, a abelha só passa em segurança se estiver totalmente contida nela — fora dela, o resto do segmento continua sólido e mortal. Contém um Pólen bônus.
+_Avoid_: Segunda abertura, buraco extra, atalho
+
+**Pólen bônus**:
+Um pólen brilhante posicionado dentro da abertura bônus. Tocá-lo soma 20 pontos à pontuação da run, uma única vez por barreira, e ele desaparece da tela depois de coletado (a abertura em si continua passável).
+_Avoid_: Power-up, item, coletável
+
 **Colisão**:
 Contato entre a abelha e uma barreira, o chão ou o teto. Qualquer colisão encerra a run imediatamente (morte instantânea).
 _Avoid_: Game over (é a *consequência* da colisão, não o mesmo conceito), impacto
 
 **Pontuação**:
-Valor numérico que cresce continuamente conforme a distância percorrida durante a run atual. Reseta a zero no início de cada run.
+Valor numérico que cresce continuamente conforme a distância percorrida durante a run atual, mais os saltos discretos de +20 ao coletar um Pólen bônus. Reseta a zero no início de cada run.
 _Avoid_: Score, pontos
 
 **Recorde**:

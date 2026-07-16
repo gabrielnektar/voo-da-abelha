@@ -1,5 +1,5 @@
-import { BARRIER_WIDTH, BEE_RADIUS, BEE_X, CANVAS_HEIGHT, CANVAS_WIDTH } from "./constants.js";
-import { barrierGapBottom } from "./gameLogic.js";
+import { BARRIER_WIDTH, BEE_RADIUS, BEE_X, BONUS_POLLEN_RADIUS, CANVAS_HEIGHT, CANVAS_WIDTH } from "./constants.js";
+import { barrierGapBottom, bonusHoleBounds } from "./gameLogic.js";
 
 // Must match the <canvas> CSS background in index.html (pre-JS fallback paint).
 const SKY_COLOR = "#bfe9ff";
@@ -30,7 +30,7 @@ export function render(ctx, state, record) {
   drawClouds(ctx, state.scrollX);
   drawPollen(ctx, state.scrollX, state.elapsedTime);
   drawGround(ctx, state.scrollX);
-  state.barriers.forEach((barrier) => drawBarrier(ctx, barrier));
+  state.barriers.forEach((barrier) => drawBarrier(ctx, barrier, state.elapsedTime));
   drawBee(ctx, state.beeY, state.elapsedTime);
   drawScore(ctx, state.score);
 
@@ -119,24 +119,34 @@ const BARRIER_CORNER_RADIUS = 10;
 const BARRIER_RIM_HEIGHT = 8;
 const BARRIER_RIM_COLOR = "#256e30";
 
-function drawBarrier(ctx, barrier) {
+const BONUS_POLLEN_COLOR = "#ffe066";
+const BONUS_POLLEN_GLOW_COLOR = "rgba(255, 224, 102, 0.35)";
+
+function drawBarrier(ctx, barrier, elapsedTime) {
   const gradient = createBarrierGradient(ctx, barrier);
   const gapBottom = barrierGapBottom(barrier);
+  const bonusHole = barrier.bonusSide ? bonusHoleBounds(barrier) : null;
 
   // Round only the corners touching the sky/ground; keep the gap-facing
   // corners square so the rim below sits flush instead of clipping them.
-  drawBarrierColumn(ctx, barrier.x, 0, barrier.gapTop, gradient, [
-    BARRIER_CORNER_RADIUS,
-    BARRIER_CORNER_RADIUS,
+  drawBarrierColumn(
+    ctx,
+    barrier.x,
     0,
-    0,
-  ]);
-  drawBarrierColumn(ctx, barrier.x, gapBottom, CANVAS_HEIGHT - gapBottom, gradient, [
-    0,
-    0,
-    BARRIER_CORNER_RADIUS,
-    BARRIER_CORNER_RADIUS,
-  ]);
+    barrier.gapTop,
+    gradient,
+    [BARRIER_CORNER_RADIUS, BARRIER_CORNER_RADIUS, 0, 0],
+    barrier.bonusSide === "top" ? bonusHole : null,
+  );
+  drawBarrierColumn(
+    ctx,
+    barrier.x,
+    gapBottom,
+    CANVAS_HEIGHT - gapBottom,
+    gradient,
+    [0, 0, BARRIER_CORNER_RADIUS, BARRIER_CORNER_RADIUS],
+    barrier.bonusSide === "bottom" ? bonusHole : null,
+  );
 
   // Darker rim right at the gap-facing edge of each column, for a bit of depth.
   ctx.fillStyle = BARRIER_RIM_COLOR;
@@ -146,6 +156,10 @@ function drawBarrier(ctx, barrier) {
   const centerX = barrier.x + BARRIER_WIDTH / 2;
   drawFlowerColumn(ctx, centerX, 0, barrier.gapTop, barrier, 0);
   drawFlowerColumn(ctx, centerX, gapBottom, CANVAS_HEIGHT, barrier, 100);
+
+  if (bonusHole && !barrier.bonusCollected) {
+    drawBonusPollen(ctx, centerX, (bonusHole.top + bonusHole.bottom) / 2, elapsedTime);
+  }
 }
 
 function createBarrierGradient(ctx, barrier) {
@@ -156,10 +170,45 @@ function createBarrierGradient(ctx, barrier) {
   return gradient;
 }
 
-function drawBarrierColumn(ctx, x, y, height, fillStyle, cornerRadii) {
+// Draws the column as one rounded rect, or — when this column holds the
+// bonus opening — as two pieces with a gap left uncut between them, so the
+// visual hole matches the pure-logic hitbox exactly.
+function drawBarrierColumn(ctx, x, y, height, fillStyle, cornerRadii, hole) {
   ctx.fillStyle = fillStyle;
+
+  if (!hole) {
+    ctx.beginPath();
+    ctx.roundRect(x, y, BARRIER_WIDTH, height, cornerRadii);
+    ctx.fill();
+    return;
+  }
+
+  const [topLeft, topRight, bottomRight, bottomLeft] = cornerRadii;
   ctx.beginPath();
-  ctx.roundRect(x, y, BARRIER_WIDTH, height, cornerRadii);
+  ctx.roundRect(x, y, BARRIER_WIDTH, hole.top - y, [topLeft, topRight, 0, 0]);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.roundRect(x, hole.bottom, BARRIER_WIDTH, y + height - hole.bottom, [
+    0,
+    0,
+    bottomRight,
+    bottomLeft,
+  ]);
+  ctx.fill();
+}
+
+// A soft pulsing glow behind a solid pollen dot, marking the bonus pickup.
+function drawBonusPollen(ctx, x, y, elapsedTime) {
+  const glowRadius = BONUS_POLLEN_RADIUS * (1.8 + 0.4 * Math.sin(elapsedTime * 4));
+
+  ctx.fillStyle = BONUS_POLLEN_GLOW_COLOR;
+  ctx.beginPath();
+  ctx.arc(x, y, glowRadius, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = BONUS_POLLEN_COLOR;
+  ctx.beginPath();
+  ctx.arc(x, y, BONUS_POLLEN_RADIUS, 0, Math.PI * 2);
   ctx.fill();
 }
 

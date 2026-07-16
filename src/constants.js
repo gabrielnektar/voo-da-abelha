@@ -20,3 +20,9 @@ export const BARRIER_GAP_HEIGHT_INITIAL = 220;
 export const BARRIER_GAP_SHRINK_DURATION = 15;
 export const BARRIER_GAP_MARGIN = 60;
 export const BARRIER_SPACING = 260;
+
+export const BONUS_BARRIER_INTERVAL = 3;
+export const BONUS_GAP_HEIGHT = 36;
+export const BONUS_GAP_MARGIN = 10;
+export const BONUS_POLLEN_RADIUS = 10;
+export const BONUS_POLLEN_POINTS = 20;

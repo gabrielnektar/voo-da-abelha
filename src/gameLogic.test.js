@@ -35,6 +35,7 @@ describe("update", () => {
       score: 0,
       elapsedTime: 0,
       gameOver: false,
+      barriersSpawned: 0,
       barriers: [],
     };
 
@@ -51,6 +52,7 @@ describe("update", () => {
       score: 0,
       elapsedTime: 0,
       gameOver: false,
+      barriersSpawned: 0,
       barriers: [],
     };
 
@@ -67,6 +69,7 @@ describe("update", () => {
       score: 20,
       elapsedTime: 5,
       gameOver: true,
+      barriersSpawned: 0,
       barriers: [],
     };
 
@@ -97,6 +100,7 @@ describe("update", () => {
       score: 0,
       elapsedTime: 0,
       gameOver: false,
+      barriersSpawned: 0,
       barriers: [{ x: 300, gapTop: 100, gapHeight: 160 }],
     };
 
@@ -114,6 +118,7 @@ describe("update", () => {
       score: 0,
       elapsedTime: 0,
       gameOver: false,
+      barriersSpawned: 0,
       barriers: [{ x: 222, gapTop: 100, gapHeight: 160 }],
     };
 
@@ -132,6 +137,7 @@ describe("update", () => {
       score: 0,
       elapsedTime: 0,
       gameOver: false,
+      barriersSpawned: 0,
       barriers: [{ x: 100, gapTop: 240, gapHeight: 160 }],
     };
 
@@ -147,6 +153,7 @@ describe("update", () => {
       score: 0,
       elapsedTime: 0,
       gameOver: false,
+      barriersSpawned: 0,
       barriers: [{ x: 100, gapTop: 240, gapHeight: 160 }],
     };
 
@@ -162,6 +169,7 @@ describe("update", () => {
       score: 0,
       elapsedTime: 0,
       gameOver: false,
+      barriersSpawned: 0,
       barriers: [
         { x: -70, gapTop: 100, gapHeight: 160 },
         { x: 400, gapTop: 200, gapHeight: 160 },
@@ -210,6 +218,7 @@ describe("update", () => {
       score: 0,
       elapsedTime: 10,
       gameOver: false,
+      barriersSpawned: 0,
       barriers: [],
     };
 
@@ -227,6 +236,7 @@ describe("update", () => {
       score: 0,
       elapsedTime: 10,
       gameOver: false,
+      barriersSpawned: 0,
       barriers: [{ x: 500, gapTop: 100, gapHeight: 160 }],
     };
 
@@ -243,6 +253,7 @@ describe("update", () => {
       score: 0,
       elapsedTime: 7.5,
       gameOver: false,
+      barriersSpawned: 0,
       barriers: [],
     };
 
@@ -259,6 +270,7 @@ describe("update", () => {
       score: 0,
       elapsedTime: 20,
       gameOver: false,
+      barriersSpawned: 0,
       barriers: [],
     };
 
@@ -266,5 +278,116 @@ describe("update", () => {
 
     expect(next.barriers[0].gapHeight).toBe(160);
     expect(next.barriers[0].gapTop).toBe(240);
+  });
+
+  test("a cada 3 barreiras, a terceira nasce com uma abertura bônus", () => {
+    const state = {
+      beeY: 300,
+      scrollX: 0,
+      score: 0,
+      elapsedTime: 0,
+      gameOver: false,
+      barriersSpawned: 2,
+      barriers: [],
+    };
+    const randomValues = [0.5, 0.2, 0.5];
+    const random = () => randomValues.shift();
+
+    const next = update(state, { holding: false }, 0.1, random);
+
+    expect(next.barriersSpawned).toBe(3);
+    expect(next.barriers[0].bonusSide).toBe("top");
+    expect(next.barriers[0].bonusGapTop).toBe(87);
+    expect(next.barriers[0].bonusCollected).toBe(false);
+  });
+
+  test("barreiras que não são a terceira não têm abertura bônus", () => {
+    const state = {
+      beeY: 300,
+      scrollX: 0,
+      score: 0,
+      elapsedTime: 0,
+      gameOver: false,
+      barriersSpawned: 0,
+      barriers: [],
+    };
+
+    const next = update(state, { holding: false }, 0.1, () => 0.5);
+
+    expect(next.barriersSpawned).toBe(1);
+    expect(next.barriers[0].bonusSide).toBe(null);
+  });
+
+  test("não encerra a run quando a abelha passa pela abertura bônus", () => {
+    const state = {
+      beeY: 68,
+      scrollX: 0,
+      score: 0,
+      elapsedTime: 0,
+      gameOver: false,
+      barriersSpawned: 0,
+      barriers: [
+        { x: 100, gapTop: 210, gapHeight: 220, bonusSide: "top", bonusGapTop: 50, bonusCollected: false },
+      ],
+    };
+
+    const next = update(state, { holding: false }, 0.01, () => 0.5);
+
+    expect(next.gameOver).toBe(false);
+  });
+
+  test("continua mortal fora da abertura bônus, no resto do segmento sólido", () => {
+    const state = {
+      beeY: 150,
+      scrollX: 0,
+      score: 0,
+      elapsedTime: 0,
+      gameOver: false,
+      barriersSpawned: 0,
+      barriers: [
+        { x: 100, gapTop: 210, gapHeight: 220, bonusSide: "top", bonusGapTop: 50, bonusCollected: false },
+      ],
+    };
+
+    const next = update(state, { holding: false }, 0.01, () => 0.5);
+
+    expect(next.gameOver).toBe(true);
+  });
+
+  test("tocar o pólen bônus dá 20 pontos e marca a barreira como coletada", () => {
+    const state = {
+      beeY: 68,
+      scrollX: 0,
+      score: 0,
+      elapsedTime: 0,
+      gameOver: false,
+      barriersSpawned: 0,
+      barriers: [
+        { x: 70, gapTop: 210, gapHeight: 220, bonusSide: "top", bonusGapTop: 50, bonusCollected: false },
+      ],
+    };
+
+    const next = update(state, { holding: false }, 0, () => 0.5);
+
+    expect(next.score).toBe(20);
+    expect(next.barriers[0].bonusCollected).toBe(true);
+  });
+
+  test("não dá o bônus de novo depois que o pólen já foi coletado", () => {
+    const state = {
+      beeY: 68,
+      scrollX: 0,
+      score: 20,
+      elapsedTime: 0,
+      gameOver: false,
+      barriersSpawned: 0,
+      barriers: [
+        { x: 70, gapTop: 210, gapHeight: 220, bonusSide: "top", bonusGapTop: 50, bonusCollected: true },
+      ],
+    };
+
+    const next = update(state, { holding: false }, 0, () => 0.5);
+
+    expect(next.score).toBe(20);
   });
 });
