@@ -1,8 +1,21 @@
 import { BARRIER_WIDTH, BEE_RADIUS, BEE_X, BONUS_POLLEN_RADIUS, CANVAS_HEIGHT, CANVAS_WIDTH } from "./constants.js";
 import { barrierGapBottom, bonusHoleBounds } from "./gameLogic.js";
 
-// Must match the <canvas> CSS background in index.html (pre-JS fallback paint).
-const SKY_COLOR = "#bfe9ff";
+// Sky color progresses once through a full day as the run goes on — not a
+// repeating cycle, it settles into permanent night after DAY_PHASES ends.
+// DAY_PHASES[0].skyTop must match the <canvas> CSS background in index.html
+// (pre-JS fallback paint, a static approximation of the morning sky).
+const DAY_PHASE_DURATION = 24;
+const DAY_PHASES = [
+  { skyTop: "#bfe9ff", skyBottom: "#eaf7ff" }, // manhã
+  { skyTop: "#5fb8f5", skyBottom: "#d5f1ff" }, // meio-dia
+  { skyTop: "#7fa8e0", skyBottom: "#ffd9a0" }, // tarde
+  { skyTop: "#3d3466", skyBottom: "#ff8c5a" }, // entardecer
+  { skyTop: "#05081c", skyBottom: "#10173a" }, // noite
+];
+const STAR_COUNT = 40;
+const STAR_AREA_HEIGHT_RATIO = 0.6;
+
 const CLOUD_COLOR = "#ffffff";
 const CLOUD_SPACING = 260;
 const CLOUD_PARALLAX_FACTOR = 0.5;
@@ -24,8 +37,8 @@ const GROUND_GRASS_HEIGHT = 8;
 const GROUND_TUFT_SPACING = 18;
 
 export function render(ctx, state, record) {
-  ctx.fillStyle = SKY_COLOR;
-  ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+  drawSky(ctx, state.elapsedTime);
+  drawStars(ctx, state.elapsedTime);
 
   drawClouds(ctx, state.scrollX);
   drawPollen(ctx, state.scrollX, state.elapsedTime);
@@ -37,6 +50,82 @@ export function render(ctx, state, record) {
   if (state.gameOver) {
     drawGameOverOverlay(ctx, state.score, record);
   }
+}
+
+function drawSky(ctx, elapsedTime) {
+  const colors = currentSkyColors(elapsedTime);
+  const gradient = ctx.createLinearGradient(0, 0, 0, CANVAS_HEIGHT);
+  gradient.addColorStop(0, colors.top);
+  gradient.addColorStop(1, colors.bottom);
+
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+}
+
+// Blends between the two DAY_PHASES the run is currently between. Once
+// elapsedTime passes the last phase, it just stays there (permanent night)
+// rather than looping back to morning.
+function currentSkyColors(elapsedTime) {
+  const lastPhase = DAY_PHASES.length - 1;
+  const phaseProgress = elapsedTime / DAY_PHASE_DURATION;
+  const phaseIndex = Math.min(Math.floor(phaseProgress), lastPhase);
+  const nextPhaseIndex = Math.min(phaseIndex + 1, lastPhase);
+  const t = phaseIndex === lastPhase ? 0 : phaseProgress - phaseIndex;
+
+  const from = DAY_PHASES[phaseIndex];
+  const to = DAY_PHASES[nextPhaseIndex];
+
+  return {
+    top: lerpColor(from.skyTop, to.skyTop, t),
+    bottom: lerpColor(from.skyBottom, to.skyBottom, t),
+  };
+}
+
+function lerpColor(hexA, hexB, t) {
+  const a = hexToRgb(hexA);
+  const b = hexToRgb(hexB);
+  const r = Math.round(a.r + (b.r - a.r) * t);
+  const g = Math.round(a.g + (b.g - a.g) * t);
+  const blue = Math.round(a.b + (b.b - a.b) * t);
+  return `rgb(${r}, ${g}, ${blue})`;
+}
+
+function hexToRgb(hex) {
+  const value = hex.replace("#", "");
+  return {
+    r: parseInt(value.substring(0, 2), 16),
+    g: parseInt(value.substring(2, 4), 16),
+    b: parseInt(value.substring(4, 6), 16),
+  };
+}
+
+// Stars fade in during the second-to-last phase (entardecer) and are fully
+// visible from the last phase (noite) onward, each twinkling on its own via
+// a stable per-star phase offset (pseudoRandom keyed by index).
+function drawStars(ctx, elapsedTime) {
+  const opacity = starOpacityFor(elapsedTime);
+  if (opacity <= 0) {
+    return;
+  }
+
+  for (let i = 0; i < STAR_COUNT; i++) {
+    const x = pseudoRandom(i * 3 + 1) * CANVAS_WIDTH;
+    const y = pseudoRandom(i * 3 + 2) * CANVAS_HEIGHT * STAR_AREA_HEIGHT_RATIO;
+    const twinklePhase = pseudoRandom(i * 3 + 3) * Math.PI * 2;
+    const twinkle = 0.4 + 0.6 * (0.5 + 0.5 * Math.sin(elapsedTime * 2 + twinklePhase));
+    const radius = 1 + pseudoRandom(i * 3 + 4) * 1.5;
+
+    ctx.fillStyle = `rgba(255, 255, 255, ${opacity * twinkle})`;
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function starOpacityFor(elapsedTime) {
+  const duskPhaseStart = (DAY_PHASES.length - 2) * DAY_PHASE_DURATION;
+  const progress = (elapsedTime - duskPhaseStart) / DAY_PHASE_DURATION;
+  return Math.max(0, Math.min(1, progress));
 }
 
 // A decorative dirt-and-grass strip along the bottom edge — purely visual,
