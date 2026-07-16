@@ -4,11 +4,11 @@ import { barrierGapBottom } from "./gameLogic.js";
 // Must match the <canvas> CSS background in index.html (pre-JS fallback paint).
 const SKY_COLOR = "#bfe9ff";
 const CLOUD_COLOR = "#ffffff";
-const CLOUD_SPACING = 180;
+const CLOUD_SPACING = 260;
 const CLOUD_PARALLAX_FACTOR = 0.5;
-const CLOUD_Y_POSITIONS = [70, 130, 100];
+const CLOUD_Y_POSITIONS = [60, 320, 160, 260, 100, 380];
 const FLOWER_PETAL_COLORS = ["#ffb3c6", "#c9a0ff", "#ffb26b", "#a0d8ff", "#ff8fa3"];
-const FLOWER_CLUSTER_OFFSET = 26;
+const FLOWER_SPACING = 38;
 const FLOWER_SIDE_OFFSET = 10;
 
 export function render(ctx, state, record) {
@@ -57,20 +57,22 @@ function drawBarrier(ctx, barrier) {
   ctx.fillRect(barrier.x, gapBottom, BARRIER_WIDTH, CANVAS_HEIGHT - gapBottom);
 
   const centerX = barrier.x + BARRIER_WIDTH / 2;
-  drawFlowerCluster(ctx, centerX, barrier.gapTop, -1, barrier, 0);
-  drawFlowerCluster(ctx, centerX, gapBottom, 1, barrier, 2);
+  drawFlowerColumn(ctx, centerX, 0, barrier.gapTop, barrier, 0);
+  drawFlowerColumn(ctx, centerX, gapBottom, CANVAS_HEIGHT, barrier, 100);
 }
 
-// Two flowers per column tip, colored from a stable per-barrier seed (gapTop
-// never changes after spawn) so a barrier doesn't change color as it scrolls.
-function drawFlowerCluster(ctx, centerX, edgeY, direction, barrier, colorOffset) {
-  drawFlower(ctx, centerX, edgeY, flowerColorFor(barrier, colorOffset));
-  drawFlower(
-    ctx,
-    centerX + FLOWER_SIDE_OFFSET,
-    edgeY + direction * FLOWER_CLUSTER_OFFSET,
-    flowerColorFor(barrier, colorOffset + 1),
-  );
+// Flowers spaced along the column's whole extent (not just the gap edge),
+// alternating a small side offset for a vine-like look. Colors come from a
+// stable per-barrier seed (gapTop never changes after spawn) plus position,
+// so neither the color nor the layout changes as the barrier scrolls.
+function drawFlowerColumn(ctx, centerX, top, bottom, barrier, colorOffsetBase) {
+  const count = Math.max(1, Math.floor((bottom - top) / FLOWER_SPACING));
+
+  for (let i = 0; i < count; i++) {
+    const y = top + FLOWER_SPACING * (i + 0.5);
+    const sideOffset = i % 2 === 0 ? -FLOWER_SIDE_OFFSET : FLOWER_SIDE_OFFSET;
+    drawFlower(ctx, centerX + sideOffset, y, flowerColorFor(barrier, colorOffsetBase + i));
+  }
 }
 
 function flowerColorFor(barrier, offset) {
