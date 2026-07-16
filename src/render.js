@@ -17,6 +17,11 @@ const POLLEN_BOB_RANGE = 10;
 const FLOWER_PETAL_COLORS = ["#ffb3c6", "#c9a0ff", "#ffb26b", "#a0d8ff", "#ff8fa3"];
 const FLOWER_SPACING = 38;
 const FLOWER_SIDE_OFFSET = 10;
+const GROUND_HEIGHT = 22;
+const GROUND_DIRT_COLOR = "#8a5a2b";
+const GROUND_GRASS_COLOR = "#5aa457";
+const GROUND_GRASS_HEIGHT = 8;
+const GROUND_TUFT_SPACING = 18;
 
 export function render(ctx, state, record) {
   ctx.fillStyle = SKY_COLOR;
@@ -24,12 +29,32 @@ export function render(ctx, state, record) {
 
   drawClouds(ctx, state.scrollX);
   drawPollen(ctx, state.scrollX, state.elapsedTime);
+  drawGround(ctx, state.scrollX);
   state.barriers.forEach((barrier) => drawBarrier(ctx, barrier));
   drawBee(ctx, state.beeY, state.elapsedTime);
   drawScore(ctx, state.score);
 
   if (state.gameOver) {
     drawGameOverOverlay(ctx, state.score, record);
+  }
+}
+
+// A decorative dirt-and-grass strip along the bottom edge — purely visual,
+// the actual collision plane stays exactly at CANVAS_HEIGHT (unchanged).
+function drawGround(ctx, scrollX) {
+  const dirtY = CANVAS_HEIGHT - GROUND_HEIGHT;
+
+  ctx.fillStyle = GROUND_DIRT_COLOR;
+  ctx.fillRect(0, dirtY, CANVAS_WIDTH, GROUND_HEIGHT);
+
+  ctx.fillStyle = GROUND_GRASS_COLOR;
+  ctx.fillRect(0, dirtY, CANVAS_WIDTH, GROUND_GRASS_HEIGHT);
+
+  const offset = scrollX % GROUND_TUFT_SPACING;
+  for (let x = CANVAS_WIDTH + offset; x > -GROUND_TUFT_SPACING; x -= GROUND_TUFT_SPACING) {
+    ctx.beginPath();
+    ctx.arc(x - offset, dirtY, GROUND_GRASS_HEIGHT * 0.7, 0, Math.PI * 2);
+    ctx.fill();
   }
 }
 
@@ -90,16 +115,52 @@ function pseudoRandom(seed) {
   return x - Math.floor(x);
 }
 
-function drawBarrier(ctx, barrier) {
-  ctx.fillStyle = "#3fa34d";
-  ctx.fillRect(barrier.x, 0, BARRIER_WIDTH, barrier.gapTop);
+const BARRIER_CORNER_RADIUS = 10;
+const BARRIER_RIM_HEIGHT = 8;
+const BARRIER_RIM_COLOR = "#256e30";
 
+function drawBarrier(ctx, barrier) {
+  const gradient = createBarrierGradient(ctx, barrier);
   const gapBottom = barrierGapBottom(barrier);
-  ctx.fillRect(barrier.x, gapBottom, BARRIER_WIDTH, CANVAS_HEIGHT - gapBottom);
+
+  // Round only the corners touching the sky/ground; keep the gap-facing
+  // corners square so the rim below sits flush instead of clipping them.
+  drawBarrierColumn(ctx, barrier.x, 0, barrier.gapTop, gradient, [
+    BARRIER_CORNER_RADIUS,
+    BARRIER_CORNER_RADIUS,
+    0,
+    0,
+  ]);
+  drawBarrierColumn(ctx, barrier.x, gapBottom, CANVAS_HEIGHT - gapBottom, gradient, [
+    0,
+    0,
+    BARRIER_CORNER_RADIUS,
+    BARRIER_CORNER_RADIUS,
+  ]);
+
+  // Darker rim right at the gap-facing edge of each column, for a bit of depth.
+  ctx.fillStyle = BARRIER_RIM_COLOR;
+  ctx.fillRect(barrier.x, barrier.gapTop - BARRIER_RIM_HEIGHT, BARRIER_WIDTH, BARRIER_RIM_HEIGHT);
+  ctx.fillRect(barrier.x, gapBottom, BARRIER_WIDTH, BARRIER_RIM_HEIGHT);
 
   const centerX = barrier.x + BARRIER_WIDTH / 2;
   drawFlowerColumn(ctx, centerX, 0, barrier.gapTop, barrier, 0);
   drawFlowerColumn(ctx, centerX, gapBottom, CANVAS_HEIGHT, barrier, 100);
+}
+
+function createBarrierGradient(ctx, barrier) {
+  const gradient = ctx.createLinearGradient(barrier.x, 0, barrier.x + BARRIER_WIDTH, 0);
+  gradient.addColorStop(0, "#2f8f3d");
+  gradient.addColorStop(0.5, "#4cbb5c");
+  gradient.addColorStop(1, "#2f8f3d");
+  return gradient;
+}
+
+function drawBarrierColumn(ctx, x, y, height, fillStyle, cornerRadii) {
+  ctx.fillStyle = fillStyle;
+  ctx.beginPath();
+  ctx.roundRect(x, y, BARRIER_WIDTH, height, cornerRadii);
+  ctx.fill();
 }
 
 // Flowers spaced along the column's whole extent (not just the gap edge),
@@ -161,6 +222,19 @@ function drawBee(ctx, beeY, elapsedTime) {
   ctx.moveTo(BEE_X + BEE_RADIUS * 0.4, beeY - BEE_RADIUS);
   ctx.lineTo(BEE_X + BEE_RADIUS * 0.4, beeY + BEE_RADIUS);
   ctx.stroke();
+
+  ctx.fillStyle = "rgba(255, 255, 255, 0.55)";
+  ctx.beginPath();
+  ctx.ellipse(
+    BEE_X - BEE_RADIUS * 0.35,
+    beeY - BEE_RADIUS * 0.35,
+    BEE_RADIUS * 0.35,
+    BEE_RADIUS * 0.22,
+    -0.4,
+    0,
+    Math.PI * 2,
+  );
+  ctx.fill();
 }
 
 // Wings flap via a sine wave driven by elapsedTime, which freezes when the
@@ -181,31 +255,59 @@ function drawWings(ctx, beeY, elapsedTime) {
   ctx.fill();
 }
 
+const SCORE_PILL_PADDING_X = 14;
+const SCORE_PILL_HEIGHT = 34;
+const SCORE_PILL_X = 12;
+const SCORE_PILL_Y = 12;
+
 function drawScore(ctx, score) {
-  ctx.fillStyle = "#2b2b2b";
-  ctx.textAlign = "left";
-  ctx.font = "bold 24px sans-serif";
-  ctx.fillText(String(Math.floor(score)), 16, 36);
-}
-
-function drawGameOverOverlay(ctx, score, record) {
-  ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-  ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-
-  ctx.fillStyle = "#ffffff";
-  ctx.textAlign = "center";
-
-  ctx.font = "bold 32px sans-serif";
-  ctx.fillText("Game Over", CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 50);
+  const text = String(Math.floor(score));
 
   ctx.font = "bold 22px sans-serif";
-  ctx.fillText(`Pontuação: ${Math.floor(score)}`, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 12);
-  ctx.fillText(`Recorde: ${Math.floor(record)}`, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 20);
+  const pillWidth = ctx.measureText(text).width + SCORE_PILL_PADDING_X * 2;
 
-  ctx.font = "18px sans-serif";
-  ctx.fillText(
-    "Clique ou pressione espaço para reiniciar",
-    CANVAS_WIDTH / 2,
-    CANVAS_HEIGHT / 2 + 60,
-  );
+  ctx.fillStyle = "rgba(255, 255, 255, 0.75)";
+  ctx.beginPath();
+  ctx.roundRect(SCORE_PILL_X, SCORE_PILL_Y, pillWidth, SCORE_PILL_HEIGHT, SCORE_PILL_HEIGHT / 2);
+  ctx.fill();
+
+  ctx.fillStyle = "#2b2b2b";
+  ctx.textAlign = "left";
+  ctx.fillText(text, SCORE_PILL_X + SCORE_PILL_PADDING_X, SCORE_PILL_Y + 24);
+}
+
+const GAME_OVER_CARD_WIDTH = 300;
+const GAME_OVER_CARD_HEIGHT = 240;
+const GAME_OVER_CARD_COLOR = "#fff8e7";
+const GAME_OVER_CARD_BORDER_COLOR = "#2b2b2b";
+
+function drawGameOverOverlay(ctx, score, record) {
+  ctx.fillStyle = "rgba(0, 0, 0, 0.35)";
+  ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+  const cardX = (CANVAS_WIDTH - GAME_OVER_CARD_WIDTH) / 2;
+  const cardY = (CANVAS_HEIGHT - GAME_OVER_CARD_HEIGHT) / 2;
+
+  ctx.fillStyle = GAME_OVER_CARD_COLOR;
+  ctx.beginPath();
+  ctx.roundRect(cardX, cardY, GAME_OVER_CARD_WIDTH, GAME_OVER_CARD_HEIGHT, 20);
+  ctx.fill();
+
+  ctx.strokeStyle = GAME_OVER_CARD_BORDER_COLOR;
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  ctx.fillStyle = "#2b2b2b";
+  ctx.textAlign = "center";
+
+  ctx.font = "bold 30px sans-serif";
+  ctx.fillText("Game Over", CANVAS_WIDTH / 2, cardY + 50);
+
+  ctx.font = "bold 20px sans-serif";
+  ctx.fillText(`Pontuação: ${Math.floor(score)}`, CANVAS_WIDTH / 2, cardY + 100);
+  ctx.fillText(`Recorde: ${Math.floor(record)}`, CANVAS_WIDTH / 2, cardY + 130);
+
+  ctx.font = "16px sans-serif";
+  ctx.fillText("Clique ou pressione espaço", CANVAS_WIDTH / 2, cardY + 175);
+  ctx.fillText("para reiniciar", CANVAS_WIDTH / 2, cardY + 197);
 }
