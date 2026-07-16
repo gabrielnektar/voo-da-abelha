@@ -29,7 +29,14 @@ describe("update", () => {
   });
 
   test("encerra a run quando a abelha toca o teto", () => {
-    const state = { beeY: 20, scrollX: 0, score: 0, gameOver: false, barriers: [] };
+    const state = {
+      beeY: 20,
+      scrollX: 0,
+      score: 0,
+      elapsedTime: 0,
+      gameOver: false,
+      barriers: [],
+    };
 
     const next = update(state, { holding: true }, 0.1);
 
@@ -38,7 +45,14 @@ describe("update", () => {
   });
 
   test("encerra a run quando a abelha toca o chão", () => {
-    const state = { beeY: 620, scrollX: 0, score: 0, gameOver: false, barriers: [] };
+    const state = {
+      beeY: 620,
+      scrollX: 0,
+      score: 0,
+      elapsedTime: 0,
+      gameOver: false,
+      barriers: [],
+    };
 
     const next = update(state, { holding: false }, 0.1);
 
@@ -47,13 +61,21 @@ describe("update", () => {
   });
 
   test("o estado fica congelado depois que a run já terminou", () => {
-    const state = { beeY: 300, scrollX: 50, score: 20, gameOver: true, barriers: [] };
+    const state = {
+      beeY: 300,
+      scrollX: 50,
+      score: 20,
+      elapsedTime: 5,
+      gameOver: true,
+      barriers: [],
+    };
 
     const next = update(state, { holding: true }, 1);
 
     expect(next.beeY).toBe(300);
     expect(next.scrollX).toBe(50);
     expect(next.score).toBe(20);
+    expect(next.elapsedTime).toBe(5);
     expect(next.gameOver).toBe(true);
   });
 
@@ -72,6 +94,7 @@ describe("update", () => {
       beeY: 300,
       scrollX: 0,
       score: 0,
+      elapsedTime: 0,
       gameOver: false,
       barriers: [{ x: 300, gapTop: 100 }],
     };
@@ -88,6 +111,7 @@ describe("update", () => {
       beeY: 300,
       scrollX: 0,
       score: 0,
+      elapsedTime: 0,
       gameOver: false,
       barriers: [{ x: 222, gapTop: 100 }],
     };
@@ -105,6 +129,7 @@ describe("update", () => {
       beeY: 100,
       scrollX: 0,
       score: 0,
+      elapsedTime: 0,
       gameOver: false,
       barriers: [{ x: 100, gapTop: 240 }],
     };
@@ -119,6 +144,7 @@ describe("update", () => {
       beeY: 300,
       scrollX: 0,
       score: 0,
+      elapsedTime: 0,
       gameOver: false,
       barriers: [{ x: 100, gapTop: 240 }],
     };
@@ -133,6 +159,7 @@ describe("update", () => {
       beeY: 300,
       scrollX: 0,
       score: 0,
+      elapsedTime: 0,
       gameOver: false,
       barriers: [
         { x: -70, gapTop: 100 },
@@ -166,6 +193,45 @@ describe("update", () => {
     const afterFirstFrame = update(state, { holding: false }, 0.5);
     const afterSecondFrame = update(afterFirstFrame, { holding: false }, 0.2);
 
-    expect(afterSecondFrame.score).toBe(105);
+    expect(afterSecondFrame.score).toBe(106);
+  });
+
+  test("uma nova run começa com a velocidade de rolagem na base", () => {
+    const state = createInitialState();
+
+    expect(state.elapsedTime).toBe(0);
+  });
+
+  test("a velocidade de rolagem aumenta conforme o tempo decorrido na run", () => {
+    const state = {
+      beeY: 300,
+      scrollX: 0,
+      score: 0,
+      elapsedTime: 10,
+      gameOver: false,
+      barriers: [],
+    };
+
+    const next = update(state, { holding: false }, 1);
+
+    expect(next.scrollX).toBe(250);
+    expect(next.score).toBe(250);
+    expect(next.elapsedTime).toBe(11);
+  });
+
+  test("o aumento de velocidade também acelera o movimento das barreiras", () => {
+    const state = {
+      beeY: 300,
+      scrollX: 0,
+      score: 0,
+      elapsedTime: 10,
+      gameOver: false,
+      barriers: [{ x: 500, gapTop: 100 }],
+    };
+
+    const next = update(state, { holding: false }, 1, () => 0.5);
+
+    expect(next.barriers.length).toBe(1);
+    expect(next.barriers[0].x).toBe(250);
   });
 });

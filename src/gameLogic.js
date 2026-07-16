@@ -12,6 +12,7 @@ import {
   GROUND_Y,
   RISE_SPEED,
   SCROLL_SPEED,
+  SCROLL_SPEED_RAMP,
 } from "./constants.js";
 
 const GAP_TOP_RANDOM_SPAN = CANVAS_HEIGHT - 2 * BARRIER_GAP_MARGIN - BARRIER_GAP_HEIGHT;
@@ -21,6 +22,7 @@ export function createInitialState() {
     beeY: CANVAS_HEIGHT / 2,
     scrollX: 0,
     score: 0,
+    elapsedTime: 0,
     gameOver: false,
     barriers: [],
   };
@@ -31,16 +33,20 @@ export function update(state, input, dt, random = Math.random) {
     return state;
   }
 
-  const distanceThisFrame = SCROLL_SPEED * dt;
+  const scrollSpeed = SCROLL_SPEED + SCROLL_SPEED_RAMP * state.elapsedTime;
+  const distanceThisFrame = scrollSpeed * dt;
   const verticalSpeed = input.holding ? -RISE_SPEED : FALL_SPEED;
   const candidateBeeY = state.beeY + verticalSpeed * dt;
-  // scrollX (world-scroll offset for rendering) and score (player-facing metric)
-  // share today's formula only because SCROLL_SPEED is still constant; they'll
-  // diverge once ticket 04 makes scroll speed progressive, so keep them separate.
+  // scrollX and score always move together (same distanceThisFrame), but are
+  // kept as separate fields on purpose: scrollX is a rendering-only detail
+  // (background tiling offset), while score is the player-facing stat that
+  // ticket 05 persists as the recorde. Collapsing them would make rendering
+  // reach into a gameplay concept for a purely visual concern.
   const scrollX = state.scrollX + distanceThisFrame;
   const score = state.score + distanceThisFrame;
+  const elapsedTime = state.elapsedTime + dt;
   const bounds = clampToBounds(candidateBeeY);
-  const barriers = updateBarriers(state.barriers, dt, random);
+  const barriers = updateBarriers(state.barriers, scrollSpeed, dt, random);
   const gameOver = bounds.hitBoundary || hitsAnyBarrier(bounds.beeY, barriers);
 
   return {
@@ -48,6 +54,7 @@ export function update(state, input, dt, random = Math.random) {
     beeY: bounds.beeY,
     scrollX,
     score,
+    elapsedTime,
     gameOver,
     barriers,
   };
@@ -73,9 +80,9 @@ export function barrierGapBottom(barrier) {
   return barrier.gapTop + BARRIER_GAP_HEIGHT;
 }
 
-function updateBarriers(barriers, dt, random) {
+function updateBarriers(barriers, scrollSpeed, dt, random) {
   const onScreen = barriers
-    .map((barrier) => ({ ...barrier, x: barrier.x - SCROLL_SPEED * dt }))
+    .map((barrier) => ({ ...barrier, x: barrier.x - scrollSpeed * dt }))
     .filter((barrier) => barrier.x + BARRIER_WIDTH >= 0);
 
   const lastBarrier = onScreen[onScreen.length - 1];

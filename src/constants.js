@@ -10,6 +10,7 @@ export const GROUND_Y = CANVAS_HEIGHT;
 export const RISE_SPEED = 200;
 export const FALL_SPEED = 200;
 export const SCROLL_SPEED = 150;
+export const SCROLL_SPEED_RAMP = 10;
 
 export const MAX_DT = 1 / 30;
 
