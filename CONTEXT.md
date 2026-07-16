@@ -17,7 +17,7 @@ Par de colunas verticais com uma abertura, posicionado ao longo do percurso hori
 _Avoid_: Obstáculo, cano, pipe
 
 **Abertura bônus**:
-Uma segunda abertura, menor que a principal, presente a cada 3 barreiras (a 3ª, 6ª, 9ª...), cortada em um dos dois segmentos sólidos daquela barreira (escolhido aleatoriamente). Assim como a abertura principal, a abelha só passa em segurança se estiver totalmente contida nela — fora dela, o resto do segmento continua sólido e mortal. Contém um Pólen bônus.
+Uma segunda abertura, quase tão acessível quanto a principal, presente a cada 3 barreiras (a 3ª, 6ª, 9ª...), cortada no segmento sólido mais alto daquela barreira (o de maior espaço, entre topo e base). Assim como a abertura principal, a abelha só passa em segurança se estiver totalmente contida nela — fora dela, o resto do segmento continua sólido e mortal. Contém um Pólen bônus.
 _Avoid_: Segunda abertura, buraco extra, atalho
 
 **Pólen bônus**:

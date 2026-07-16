@@ -290,14 +290,14 @@ describe("update", () => {
       barriersSpawned: 2,
       barriers: [],
     };
-    const randomValues = [0.5, 0.2, 0.5];
+    const randomValues = [0.5, 0.5];
     const random = () => randomValues.shift();
 
     const next = update(state, { holding: false }, 0.1, random);
 
     expect(next.barriersSpawned).toBe(3);
     expect(next.barriers[0].bonusSide).toBe("top");
-    expect(next.barriers[0].bonusGapTop).toBe(80);
+    expect(next.barriers[0].bonusGapTop).toBe(30);
     expect(next.barriers[0].bonusCollected).toBe(false);
   });
 
@@ -338,7 +338,7 @@ describe("update", () => {
 
   test("continua mortal fora da abertura bônus, no resto do segmento sólido", () => {
     const state = {
-      beeY: 150,
+      beeY: 15,
       scrollX: 0,
       score: 0,
       elapsedTime: 0,
@@ -356,7 +356,7 @@ describe("update", () => {
 
   test("tocar o pólen bônus dá 20 pontos e marca a barreira como coletada", () => {
     const state = {
-      beeY: 68,
+      beeY: 125,
       scrollX: 0,
       score: 0,
       elapsedTime: 0,

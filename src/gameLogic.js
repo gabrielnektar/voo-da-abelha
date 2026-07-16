@@ -199,13 +199,16 @@ function spawnBarrier(random, elapsedTime, hasBonus) {
 }
 
 // Places a bonus opening inside whichever solid segment (top or bottom
-// column) is chosen at random, always fitting within it: BONUS_GAP_HEIGHT
-// plus margin on both sides exactly equals BARRIER_GAP_MARGIN, the smallest
-// a segment can ever be, so it always fits (with zero slack only in that
-// rare tightest case).
+// column) is taller, so it's as close as possible in size to the main gap.
+// This always fits: the taller segment is always at least half of
+// (CANVAS_HEIGHT - gapHeight), which even in the tightest possible case
+// (gapHeight at its widest, BARRIER_GAP_HEIGHT_INITIAL) is comfortably more
+// than BONUS_GAP_HEIGHT plus margin on both sides.
 function spawnBonusPollen(random, gapTop, gapHeight) {
   const gapBottom = gapTop + gapHeight;
-  const bonusSide = random() < 0.5 ? "top" : "bottom";
+  const topHeight = gapTop;
+  const bottomHeight = CANVAS_HEIGHT - gapBottom;
+  const bonusSide = topHeight >= bottomHeight ? "top" : "bottom";
   const segment =
     bonusSide === "top" ? { top: 0, bottom: gapTop } : { top: gapBottom, bottom: CANVAS_HEIGHT };
   const segmentHeight = segment.bottom - segment.top;

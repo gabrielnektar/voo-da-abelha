@@ -22,7 +22,7 @@ export const BARRIER_GAP_MARGIN = 60;
 export const BARRIER_SPACING = 260;
 
 export const BONUS_BARRIER_INTERVAL = 3;
-export const BONUS_GAP_HEIGHT = 50;
-export const BONUS_GAP_MARGIN = 5;
+export const BONUS_GAP_HEIGHT = 150;
+export const BONUS_GAP_MARGIN = 15;
 export const BONUS_POLLEN_RADIUS = 10;
 export const BONUS_POLLEN_POINTS = 20;
