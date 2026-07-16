@@ -5,7 +5,7 @@ import { barrierGapBottom, bonusHoleBounds } from "./gameLogic.js";
 // repeating cycle, it settles into permanent night after DAY_PHASES ends.
 // DAY_PHASES[0].skyTop must match the <canvas> CSS background in index.html
 // (pre-JS fallback paint, a static approximation of the morning sky).
-const DAY_PHASE_DURATION = 24;
+const DAY_PHASE_DURATION = 16;
 const DAY_PHASES = [
   { skyTop: "#bfe9ff", skyBottom: "#eaf7ff" }, // manhã
   { skyTop: "#5fb8f5", skyBottom: "#d5f1ff" }, // meio-dia
