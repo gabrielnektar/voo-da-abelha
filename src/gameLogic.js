@@ -1,6 +1,8 @@
 import {
   BARRIER_GAP_HEIGHT,
+  BARRIER_GAP_HEIGHT_INITIAL,
   BARRIER_GAP_MARGIN,
+  BARRIER_GAP_SHRINK_DURATION,
   BARRIER_SPACING,
   BARRIER_WIDTH,
   BEE_RADIUS,
@@ -14,8 +16,6 @@ import {
   SCROLL_SPEED,
   SCROLL_SPEED_RAMP,
 } from "./constants.js";
-
-const GAP_TOP_RANDOM_SPAN = CANVAS_HEIGHT - 2 * BARRIER_GAP_MARGIN - BARRIER_GAP_HEIGHT;
 
 export function createInitialState() {
   return {
@@ -46,7 +46,11 @@ export function update(state, input, dt, random = Math.random) {
   const score = state.score + distanceThisFrame;
   const elapsedTime = state.elapsedTime + dt;
   const bounds = clampToBounds(candidateBeeY);
-  const barriers = updateBarriers(state.barriers, scrollSpeed, dt, random);
+  const barriers = updateBarriers(
+    state.barriers,
+    { scrollSpeed, elapsedTime: state.elapsedTime, dt },
+    random,
+  );
   const gameOver = bounds.hitBoundary || hitsAnyBarrier(bounds.beeY, barriers);
 
   return {
@@ -77,10 +81,11 @@ function hitsBarrier(beeY, barrier) {
 }
 
 export function barrierGapBottom(barrier) {
-  return barrier.gapTop + BARRIER_GAP_HEIGHT;
+  return barrier.gapTop + barrier.gapHeight;
 }
 
-function updateBarriers(barriers, scrollSpeed, dt, random) {
+function updateBarriers(barriers, frame, random) {
+  const { scrollSpeed, elapsedTime, dt } = frame;
   const onScreen = barriers
     .map((barrier) => ({ ...barrier, x: barrier.x - scrollSpeed * dt }))
     .filter((barrier) => barrier.x + BARRIER_WIDTH >= 0);
@@ -88,13 +93,25 @@ function updateBarriers(barriers, scrollSpeed, dt, random) {
   const lastBarrier = onScreen[onScreen.length - 1];
   const shouldSpawn = !lastBarrier || lastBarrier.x <= CANVAS_WIDTH - BARRIER_SPACING;
 
-  return shouldSpawn ? [...onScreen, spawnBarrier(random)] : onScreen;
+  return shouldSpawn ? [...onScreen, spawnBarrier(random, elapsedTime)] : onScreen;
 }
 
-function spawnBarrier(random) {
+// Barriers spawn with a wider gap early in the run, so the first stretch is
+// easier; the gap shrinks to its normal size over BARRIER_GAP_SHRINK_DURATION.
+function currentGapHeight(elapsedTime) {
+  const shrinkProgress = Math.min(1, elapsedTime / BARRIER_GAP_SHRINK_DURATION);
+  // Linear interpolation from the wide initial gap down to the normal gap.
+  return BARRIER_GAP_HEIGHT_INITIAL - (BARRIER_GAP_HEIGHT_INITIAL - BARRIER_GAP_HEIGHT) * shrinkProgress;
+}
+
+function spawnBarrier(random, elapsedTime) {
+  const gapHeight = currentGapHeight(elapsedTime);
+  const gapTopRandomSpan = CANVAS_HEIGHT - 2 * BARRIER_GAP_MARGIN - gapHeight;
+
   return {
     x: CANVAS_WIDTH,
-    gapTop: BARRIER_GAP_MARGIN + random() * GAP_TOP_RANDOM_SPAN,
+    gapTop: BARRIER_GAP_MARGIN + random() * gapTopRandomSpan,
+    gapHeight,
   };
 }
 

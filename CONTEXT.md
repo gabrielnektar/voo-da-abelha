@@ -13,7 +13,7 @@ Personagem controlado pelo jogador. Avança horizontalmente de forma automática
 _Avoid_: Player, personagem, protagonista
 
 **Barreira**:
-Par de colunas verticais com uma abertura, posicionado ao longo do percurso horizontal. A abelha deve passar pela abertura sem tocar as colunas. Gerada em intervalos horizontais regulares, com a posição vertical da abertura aleatória.
+Par de colunas verticais com uma abertura, posicionado ao longo do percurso horizontal. A abelha deve passar pela abertura sem tocar as colunas. Gerada em intervalos horizontais regulares, com a posição vertical da abertura aleatória. O tamanho da abertura é maior nas barreiras geradas no início da run, encolhendo gradualmente até um tamanho normal — cada barreira mantém o tamanho de abertura com que nasceu.
 _Avoid_: Obstáculo, cano, pipe
 
 **Colisão**:

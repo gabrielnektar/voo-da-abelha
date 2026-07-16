@@ -86,7 +86,8 @@ describe("update", () => {
 
     expect(next.barriers.length).toBe(1);
     expect(next.barriers[0].x).toBe(480);
-    expect(next.barriers[0].gapTop).toBe(240);
+    expect(next.barriers[0].gapHeight).toBe(220);
+    expect(next.barriers[0].gapTop).toBe(210);
   });
 
   test("avança as barreiras existentes da direita para a esquerda", () => {
@@ -96,7 +97,7 @@ describe("update", () => {
       score: 0,
       elapsedTime: 0,
       gameOver: false,
-      barriers: [{ x: 300, gapTop: 100 }],
+      barriers: [{ x: 300, gapTop: 100, gapHeight: 160 }],
     };
 
     const next = update(state, { holding: false }, 0.5, () => 0.5);
@@ -113,7 +114,7 @@ describe("update", () => {
       score: 0,
       elapsedTime: 0,
       gameOver: false,
-      barriers: [{ x: 222, gapTop: 100 }],
+      barriers: [{ x: 222, gapTop: 100, gapHeight: 160 }],
     };
 
     const next = update(state, { holding: false }, 0.1, () => 0.5);
@@ -121,7 +122,7 @@ describe("update", () => {
     expect(next.barriers.length).toBe(2);
     expect(next.barriers[0].x).toBe(207);
     expect(next.barriers[1].x).toBe(480);
-    expect(next.barriers[1].gapTop).toBe(240);
+    expect(next.barriers[1].gapTop).toBe(210);
   });
 
   test("encerra a run quando a abelha colide com a parte sólida de uma barreira", () => {
@@ -131,7 +132,7 @@ describe("update", () => {
       score: 0,
       elapsedTime: 0,
       gameOver: false,
-      barriers: [{ x: 100, gapTop: 240 }],
+      barriers: [{ x: 100, gapTop: 240, gapHeight: 160 }],
     };
 
     const next = update(state, { holding: false }, 0.1, () => 0.5);
@@ -146,7 +147,7 @@ describe("update", () => {
       score: 0,
       elapsedTime: 0,
       gameOver: false,
-      barriers: [{ x: 100, gapTop: 240 }],
+      barriers: [{ x: 100, gapTop: 240, gapHeight: 160 }],
     };
 
     const next = update(state, { holding: false }, 0.1, () => 0.5);
@@ -162,8 +163,8 @@ describe("update", () => {
       elapsedTime: 0,
       gameOver: false,
       barriers: [
-        { x: -70, gapTop: 100 },
-        { x: 400, gapTop: 200 },
+        { x: -70, gapTop: 100, gapHeight: 160 },
+        { x: 400, gapTop: 200, gapHeight: 160 },
       ],
     };
 
@@ -226,12 +227,44 @@ describe("update", () => {
       score: 0,
       elapsedTime: 10,
       gameOver: false,
-      barriers: [{ x: 500, gapTop: 100 }],
+      barriers: [{ x: 500, gapTop: 100, gapHeight: 160 }],
     };
 
     const next = update(state, { holding: false }, 1, () => 0.5);
 
     expect(next.barriers.length).toBe(1);
     expect(next.barriers[0].x).toBe(250);
+  });
+
+  test("a abertura das barreiras encolhe gradualmente conforme a run avança", () => {
+    const state = {
+      beeY: 300,
+      scrollX: 0,
+      score: 0,
+      elapsedTime: 7.5,
+      gameOver: false,
+      barriers: [],
+    };
+
+    const next = update(state, { holding: false }, 0.1, () => 0.5);
+
+    expect(next.barriers[0].gapHeight).toBe(190);
+    expect(next.barriers[0].gapTop).toBe(225);
+  });
+
+  test("a abertura chega ao tamanho normal depois do período de encolhimento", () => {
+    const state = {
+      beeY: 300,
+      scrollX: 0,
+      score: 0,
+      elapsedTime: 20,
+      gameOver: false,
+      barriers: [],
+    };
+
+    const next = update(state, { holding: false }, 0.1, () => 0.5);
+
+    expect(next.barriers[0].gapHeight).toBe(160);
+    expect(next.barriers[0].gapTop).toBe(240);
   });
 });

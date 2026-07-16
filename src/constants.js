@@ -16,5 +16,7 @@ export const MAX_DT = 1 / 30;
 
 export const BARRIER_WIDTH = 60;
 export const BARRIER_GAP_HEIGHT = 160;
+export const BARRIER_GAP_HEIGHT_INITIAL = 220;
+export const BARRIER_GAP_SHRINK_DURATION = 15;
 export const BARRIER_GAP_MARGIN = 60;
 export const BARRIER_SPACING = 260;
