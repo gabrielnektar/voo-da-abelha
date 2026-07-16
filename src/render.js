@@ -9,9 +9,10 @@ export function render(ctx, state) {
   drawScrollMarks(ctx, state.scrollX);
   state.barriers.forEach((barrier) => drawBarrier(ctx, barrier));
   drawBee(ctx, state.beeY);
+  drawScore(ctx, state.score);
 
   if (state.gameOver) {
-    drawGameOverOverlay(ctx);
+    drawGameOverOverlay(ctx, state.score);
   }
 }
 
@@ -53,7 +54,14 @@ function drawBee(ctx, beeY) {
   ctx.stroke();
 }
 
-function drawGameOverOverlay(ctx) {
+function drawScore(ctx, score) {
+  ctx.fillStyle = "#2b2b2b";
+  ctx.textAlign = "left";
+  ctx.font = "bold 24px sans-serif";
+  ctx.fillText(String(Math.floor(score)), 16, 36);
+}
+
+function drawGameOverOverlay(ctx, score) {
   ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
   ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
@@ -61,12 +69,15 @@ function drawGameOverOverlay(ctx) {
   ctx.textAlign = "center";
 
   ctx.font = "bold 32px sans-serif";
-  ctx.fillText("Game Over", CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 20);
+  ctx.fillText("Game Over", CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 40);
+
+  ctx.font = "bold 22px sans-serif";
+  ctx.fillText(`Pontuação: ${Math.floor(score)}`, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
 
   ctx.font = "18px sans-serif";
   ctx.fillText(
     "Clique ou pressione espaço para reiniciar",
     CANVAS_WIDTH / 2,
-    CANVAS_HEIGHT / 2 + 20,
+    CANVAS_HEIGHT / 2 + 40,
   );
 }

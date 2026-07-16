@@ -20,6 +20,7 @@ export function createInitialState() {
   return {
     beeY: CANVAS_HEIGHT / 2,
     scrollX: 0,
+    score: 0,
     gameOver: false,
     barriers: [],
   };
@@ -30,9 +31,14 @@ export function update(state, input, dt, random = Math.random) {
     return state;
   }
 
+  const distanceThisFrame = SCROLL_SPEED * dt;
   const verticalSpeed = input.holding ? -RISE_SPEED : FALL_SPEED;
   const candidateBeeY = state.beeY + verticalSpeed * dt;
-  const scrollX = state.scrollX + SCROLL_SPEED * dt;
+  // scrollX (world-scroll offset for rendering) and score (player-facing metric)
+  // share today's formula only because SCROLL_SPEED is still constant; they'll
+  // diverge once ticket 04 makes scroll speed progressive, so keep them separate.
+  const scrollX = state.scrollX + distanceThisFrame;
+  const score = state.score + distanceThisFrame;
   const bounds = clampToBounds(candidateBeeY);
   const barriers = updateBarriers(state.barriers, dt, random);
   const gameOver = bounds.hitBoundary || hitsAnyBarrier(bounds.beeY, barriers);
@@ -41,6 +47,7 @@ export function update(state, input, dt, random = Math.random) {
     ...state,
     beeY: bounds.beeY,
     scrollX,
+    score,
     gameOver,
     barriers,
   };
