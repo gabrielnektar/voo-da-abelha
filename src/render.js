@@ -498,9 +498,10 @@ function drawScore(ctx, score) {
 }
 
 const GAME_OVER_CARD_WIDTH = 300;
-const GAME_OVER_CARD_HEIGHT = 240;
+const GAME_OVER_CARD_HEIGHT = 260;
 const GAME_OVER_CARD_COLOR = "#fff8e7";
 const GAME_OVER_CARD_BORDER_COLOR = "#2b2b2b";
+const SAD_BEE_RADIUS = 22;
 
 function drawGameOverOverlay(ctx, score, record) {
   ctx.fillStyle = "rgba(0, 0, 0, 0.35)";
@@ -508,6 +509,7 @@ function drawGameOverOverlay(ctx, score, record) {
 
   const cardX = (CANVAS_WIDTH - GAME_OVER_CARD_WIDTH) / 2;
   const cardY = (CANVAS_HEIGHT - GAME_OVER_CARD_HEIGHT) / 2;
+  const centerX = CANVAS_WIDTH / 2;
 
   ctx.fillStyle = GAME_OVER_CARD_COLOR;
   ctx.beginPath();
@@ -518,17 +520,90 @@ function drawGameOverOverlay(ctx, score, record) {
   ctx.lineWidth = 3;
   ctx.stroke();
 
+  drawSadBee(ctx, centerX, cardY + 50, SAD_BEE_RADIUS);
+
   ctx.fillStyle = "#2b2b2b";
   ctx.textAlign = "center";
 
   ctx.font = "bold 30px sans-serif";
-  ctx.fillText("Game Over", CANVAS_WIDTH / 2, cardY + 50);
+  ctx.fillText("Game Over", centerX, cardY + 92);
 
   ctx.font = "bold 20px sans-serif";
-  ctx.fillText(`Pontuação: ${Math.floor(score)}`, CANVAS_WIDTH / 2, cardY + 100);
-  ctx.fillText(`Recorde: ${Math.floor(record)}`, CANVAS_WIDTH / 2, cardY + 130);
+  ctx.fillText(`Pontuação: ${Math.floor(score)}`, centerX, cardY + 128);
+  ctx.fillText(`Recorde: ${Math.floor(record)}`, centerX, cardY + 152);
 
   ctx.font = "16px sans-serif";
-  ctx.fillText("Clique ou pressione espaço", CANVAS_WIDTH / 2, cardY + 175);
-  ctx.fillText("para reiniciar", CANVAS_WIDTH / 2, cardY + 197);
+  ctx.fillText("Clique ou pressione espaço", centerX, cardY + 195);
+  ctx.fillText("para reiniciar", centerX, cardY + 217);
+}
+
+// A sad bee for the game-over card: same body/stripes as the flying bee,
+// but with drooping wings and a frowning face instead of the wing-flap
+// animation, since this is a static portrait, not an in-run sprite.
+function drawSadBee(ctx, x, y, radius) {
+  drawDroopyWings(ctx, x, y, radius);
+
+  ctx.fillStyle = "#ffd23f";
+  ctx.beginPath();
+  ctx.arc(x, y, radius, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.strokeStyle = "#2b2b2b";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(x - radius * 0.4, y - radius);
+  ctx.lineTo(x - radius * 0.4, y + radius);
+  ctx.moveTo(x + radius * 0.4, y - radius);
+  ctx.lineTo(x + radius * 0.4, y + radius);
+  ctx.stroke();
+
+  drawSadFace(ctx, x, y, radius);
+}
+
+function drawDroopyWings(ctx, x, y, radius) {
+  const wingWidth = radius * 0.75;
+  const wingHeight = radius * 0.45;
+  const wingY = y - radius * 0.1;
+
+  ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+  [-1, 1].forEach((side) => {
+    ctx.save();
+    ctx.translate(x + side * radius * 0.55, wingY);
+    ctx.rotate(side * 0.3);
+    ctx.beginPath();
+    ctx.ellipse(0, 0, wingWidth, wingHeight, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  });
+}
+
+function drawSadFace(ctx, x, y, radius) {
+  ctx.strokeStyle = "#2b2b2b";
+  ctx.lineWidth = 2;
+
+  // Eyebrows angled down toward the center for a worried look.
+  ctx.beginPath();
+  ctx.moveTo(x - radius * 0.55, y - radius * 0.15);
+  ctx.lineTo(x - radius * 0.2, y - radius * 0.32);
+  ctx.moveTo(x + radius * 0.55, y - radius * 0.15);
+  ctx.lineTo(x + radius * 0.2, y - radius * 0.32);
+  ctx.stroke();
+
+  ctx.fillStyle = "#2b2b2b";
+  ctx.beginPath();
+  ctx.arc(x - radius * 0.3, y - radius * 0.02, radius * 0.07, 0, Math.PI * 2);
+  ctx.arc(x + radius * 0.3, y - radius * 0.02, radius * 0.07, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Frown: the top arc of a circle centered below the mouth.
+  ctx.beginPath();
+  ctx.arc(x, y + radius * 0.58, radius * 0.22, Math.PI * 1.15, Math.PI * 1.85);
+  ctx.stroke();
+
+  ctx.fillStyle = "#7ec8f2";
+  ctx.beginPath();
+  ctx.moveTo(x - radius * 0.32, y + radius * 0.05);
+  ctx.quadraticCurveTo(x - radius * 0.48, y + radius * 0.35, x - radius * 0.32, y + radius * 0.5);
+  ctx.quadraticCurveTo(x - radius * 0.16, y + radius * 0.35, x - radius * 0.32, y + radius * 0.05);
+  ctx.fill();
 }
