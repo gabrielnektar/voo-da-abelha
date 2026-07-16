@@ -13,15 +13,15 @@ Personagem controlado pelo jogador. Avança horizontalmente de forma automática
 _Avoid_: Player, personagem, protagonista
 
 **Barreira**:
-Par de colunas verticais com uma abertura, posicionado ao longo do percurso horizontal. A abelha deve passar pela abertura sem tocar as colunas. Gerada em intervalos horizontais regulares, com a posição vertical da abertura aleatória — mas sempre alcançável a partir da abertura da barreira anterior, dado o quanto a abelha consegue subir/descer no tempo disponível entre as duas; nunca exige mais velocidade vertical do que ela consegue prover. O tamanho da abertura é maior nas barreiras geradas no início da run, encolhendo gradualmente até um tamanho normal — cada barreira mantém o tamanho de abertura com que nasceu.
+Par de colunas verticais com uma abertura, posicionado ao longo do percurso horizontal. A abelha deve passar pela abertura sem tocar as colunas. Gerada em intervalos horizontais regulares, com a posição vertical da abertura aleatória — mas sempre alcançável a partir de qualquer uma das saídas da barreira anterior (a abertura principal e, quando houver, a Abertura bônus), dado o quanto a abelha consegue subir/descer no tempo disponível entre as duas; nunca exige mais velocidade vertical do que ela consegue prover, não importa por qual das duas saídas a abelha tenha passado. O tamanho da abertura é maior nas barreiras geradas no início da run, encolhendo gradualmente até um tamanho normal — cada barreira mantém o tamanho de abertura com que nasceu.
 _Avoid_: Obstáculo, cano, pipe
 
 **Abertura bônus**:
-Uma segunda abertura, quase tão acessível quanto a principal, presente a cada 3 barreiras (a 3ª, 6ª, 9ª...), cortada no segmento sólido mais alto daquela barreira (o de maior espaço, entre topo e base). Assim como a abertura principal, a abelha só passa em segurança se estiver totalmente contida nela — fora dela, o resto do segmento continua sólido e mortal. Contém um Pólen bônus.
+Uma segunda abertura, quase tão acessível quanto a principal, presente a cada 3 barreiras (a 3ª, 6ª, 9ª...), cortada no segmento sólido mais alto daquela barreira (o de maior espaço, entre topo e base). Sua posição dentro do segmento também é mantida alcançável a partir da abertura principal da mesma barreira, para que desviar até ela não deixe a abelha impossibilitada de continuar. Assim como a abertura principal, a abelha só passa em segurança se estiver totalmente contida nela — fora dela, o resto do segmento continua sólido e mortal. Contém um Pólen bônus.
 _Avoid_: Segunda abertura, buraco extra, atalho
 
 **Pólen bônus**:
-Um pólen brilhante posicionado dentro da abertura bônus. Tocá-lo soma 20 pontos à pontuação da run, uma única vez por barreira, e ele desaparece da tela depois de coletado (a abertura em si continua passável).
+Um pólen brilhante posicionado dentro da abertura bônus. Tocá-lo soma 100 pontos à pontuação da run, uma única vez por barreira, e ele desaparece da tela depois de coletado (a abertura em si continua passável).
 _Avoid_: Power-up, item, coletável
 
 **Colisão**:
@@ -29,7 +29,7 @@ Contato entre a abelha e uma barreira, o chão ou o teto. Qualquer colisão ence
 _Avoid_: Game over (é a *consequência* da colisão, não o mesmo conceito), impacto
 
 **Pontuação**:
-Valor numérico que cresce continuamente conforme a distância percorrida durante a run atual, mais os saltos discretos de +20 ao coletar um Pólen bônus. Reseta a zero no início de cada run.
+Valor numérico que cresce continuamente conforme a distância percorrida durante a run atual, mais os saltos discretos de +100 ao coletar um Pólen bônus. Reseta a zero no início de cada run.
 _Avoid_: Score, pontos
 
 **Recorde**:

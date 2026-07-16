@@ -127,7 +127,7 @@ describe("update", () => {
     expect(next.barriers.length).toBe(2);
     expect(next.barriers[0].x).toBe(207);
     expect(next.barriers[1].x).toBe(480);
-    expect(next.barriers[1].gapTop).toBe(198.75);
+    expect(next.barriers[1].gapTop).toBe(217.5);
   });
 
   test("encerra a run quando a abelha colide com a parte sólida de uma barreira", () => {
@@ -433,7 +433,7 @@ describe("update", () => {
     const next = update(state, { holding: false }, 0.01, () => 0.5);
 
     expect(next.barriers.length).toBe(2);
-    expect(next.barriers[1].gapTop).toBe(135);
+    expect(next.barriers[1].gapTop).toBe(150);
   });
 
   test("a primeira barreira (sem anterior) não tem restrição de alcance", () => {
@@ -442,5 +442,52 @@ describe("update", () => {
     const next = update(state, { holding: false }, 0.1, () => 1);
 
     expect(next.barriers[0].gapTop).toBe(375);
+  });
+
+  test("a nova abertura respeita tanto a saída principal quanto a bônus da anterior", () => {
+    const state = {
+      beeY: 300,
+      scrollX: 0,
+      score: 0,
+      elapsedTime: 11,
+      gameOver: false,
+      barriersSpawned: 0,
+      barriers: [
+        {
+          x: 200,
+          gapTop: 60,
+          gapHeight: 161,
+          bonusSide: "bottom",
+          bonusGapTop: 373,
+          bonusCollected: false,
+          bonusCollectedAt: null,
+        },
+      ],
+    };
+
+    const next = update(state, { holding: false }, 0.01, () => 0.5);
+
+    expect(next.barriers.length).toBe(2);
+    expect(next.barriers[1].gapTop).toBe(210);
+  });
+
+  test("a abertura bônus fica dentro do alcance da abertura principal da mesma barreira", () => {
+    const state = {
+      beeY: 300,
+      scrollX: 0,
+      score: 0,
+      elapsedTime: 11,
+      gameOver: false,
+      barriersSpawned: 2,
+      barriers: [],
+    };
+    const randomValues = [1, 0];
+    const random = () => randomValues.shift();
+
+    const next = update(state, { holding: false }, 0.1, random);
+
+    expect(next.barriers[0].gapTop).toBe(419);
+    expect(next.barriers[0].bonusSide).toBe("top");
+    expect(next.barriers[0].bonusGapTop).toBe(252);
   });
 });
