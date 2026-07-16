@@ -66,8 +66,12 @@ export function render(ctx, state, record, gameStarted) {
   }
 }
 
+const HAPPY_BEE_RADIUS = 32;
+
 function drawStartScreen(ctx) {
   const centerX = CANVAS_WIDTH / 2;
+
+  drawHappyBee(ctx, centerX, CANVAS_HEIGHT / 2 - 160, HAPPY_BEE_RADIUS);
 
   ctx.textAlign = "center";
   ctx.fillStyle = TITLE_COLOR;
@@ -103,6 +107,63 @@ function drawPlayButton(ctx, x, y) {
   ctx.lineTo(x + triangleSize, y);
   ctx.closePath();
   ctx.fill();
+}
+
+// A happy bee for the start screen: same body/stripes/wing shape language
+// as drawSadBee (game-over card), but perky wings and a cheerful face
+// instead of drooping wings and a frown. Also a static portrait, no
+// wing-flap animation (the start screen never runs update(), so
+// elapsedTime stays frozen at 0 anyway).
+function drawHappyBee(ctx, x, y, radius) {
+  drawPerkyWings(ctx, x, y, radius);
+
+  ctx.fillStyle = "#ffd23f";
+  ctx.beginPath();
+  ctx.arc(x, y, radius, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.strokeStyle = "#2b2b2b";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(x - radius * 0.4, y - radius);
+  ctx.lineTo(x - radius * 0.4, y + radius);
+  ctx.moveTo(x + radius * 0.4, y - radius);
+  ctx.lineTo(x + radius * 0.4, y + radius);
+  ctx.stroke();
+
+  drawHappyFace(ctx, x, y, radius);
+}
+
+function drawPerkyWings(ctx, x, y, radius) {
+  const wingWidth = radius * 0.75;
+  const wingHeight = radius * 0.45;
+  const wingY = y - radius * 0.55;
+
+  ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+  [-1, 1].forEach((side) => {
+    ctx.save();
+    ctx.translate(x + side * radius * 0.5, wingY);
+    ctx.rotate(side * -0.25);
+    ctx.beginPath();
+    ctx.ellipse(0, 0, wingWidth, wingHeight, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  });
+}
+
+function drawHappyFace(ctx, x, y, radius) {
+  ctx.fillStyle = "#2b2b2b";
+  ctx.beginPath();
+  ctx.arc(x - radius * 0.3, y - radius * 0.1, radius * 0.08, 0, Math.PI * 2);
+  ctx.arc(x + radius * 0.3, y - radius * 0.1, radius * 0.08, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Smile: the bottom arc of a circle centered above the mouth.
+  ctx.strokeStyle = "#2b2b2b";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(x, y + radius * 0.15, radius * 0.28, Math.PI * 0.2, Math.PI * 0.8);
+  ctx.stroke();
 }
 
 function drawSky(ctx, elapsedTime) {

@@ -89,8 +89,8 @@ describe("update", () => {
 
     expect(next.barriers.length).toBe(1);
     expect(next.barriers[0].x).toBe(480);
-    expect(next.barriers[0].gapHeight).toBe(220);
-    expect(next.barriers[0].gapTop).toBe(210);
+    expect(next.barriers[0].gapHeight).toBe(210);
+    expect(next.barriers[0].gapTop).toBe(215);
   });
 
   test("avança as barreiras existentes da direita para a esquerda", () => {
@@ -127,7 +127,7 @@ describe("update", () => {
     expect(next.barriers.length).toBe(2);
     expect(next.barriers[0].x).toBe(207);
     expect(next.barriers[1].x).toBe(480);
-    expect(next.barriers[1].gapTop).toBe(195);
+    expect(next.barriers[1].gapTop).toBe(197.5);
   });
 
   test("encerra a run quando a abelha colide com a parte sólida de uma barreira", () => {
@@ -259,8 +259,8 @@ describe("update", () => {
 
     const next = update(state, { holding: false }, 0.1, () => 0.5);
 
-    expect(next.barriers[0].gapHeight).toBe(190);
-    expect(next.barriers[0].gapTop).toBe(225);
+    expect(next.barriers[0].gapHeight).toBe(180);
+    expect(next.barriers[0].gapTop).toBe(230);
   });
 
   test("a abertura chega ao tamanho normal depois do período de encolhimento", () => {
@@ -276,8 +276,8 @@ describe("update", () => {
 
     const next = update(state, { holding: false }, 0.1, () => 0.5);
 
-    expect(next.barriers[0].gapHeight).toBe(160);
-    expect(next.barriers[0].gapTop).toBe(240);
+    expect(next.barriers[0].gapHeight).toBe(150);
+    expect(next.barriers[0].gapTop).toBe(245);
   });
 
   test("a cada 3 barreiras, a terceira nasce com uma abertura bônus", () => {
@@ -297,7 +297,7 @@ describe("update", () => {
 
     expect(next.barriersSpawned).toBe(3);
     expect(next.barriers[0].bonusSide).toBe("top");
-    expect(next.barriers[0].bonusGapTop).toBe(30);
+    expect(next.barriers[0].bonusGapTop).toBe(37.5);
     expect(next.barriers[0].bonusCollected).toBe(false);
   });
 
@@ -421,7 +421,7 @@ describe("update", () => {
         {
           x: 200,
           gapTop: 60,
-          gapHeight: 176,
+          gapHeight: 166,
           bonusSide: null,
           bonusGapTop: null,
           bonusCollected: false,
@@ -441,6 +441,6 @@ describe("update", () => {
 
     const next = update(state, { holding: false }, 0.1, () => 1);
 
-    expect(next.barriers[0].gapTop).toBe(360);
+    expect(next.barriers[0].gapTop).toBe(370);
   });
 });
