@@ -1,6 +1,7 @@
 import { CANVAS_HEIGHT, CANVAS_WIDTH, MAX_DT } from "./constants.js";
 import { createInitialState, update } from "./gameLogic.js";
 import { createInputController } from "./input.js";
+import { getRecord, updateRecord } from "./recordStore.js";
 import { render } from "./render.js";
 
 const canvas = document.getElementById("game");
@@ -11,6 +12,7 @@ const ctx = canvas.getContext("2d");
 const input = createInputController(canvas);
 
 let state = createInitialState();
+let record = getRecord();
 
 input.onPress(() => {
   if (state.gameOver) {
@@ -24,8 +26,14 @@ function loop(time) {
   const dt = Math.min((time - lastTime) / 1000, MAX_DT);
   lastTime = time;
 
+  const wasGameOver = state.gameOver;
   state = update(state, { holding: input.isHolding() }, dt);
-  render(ctx, state);
+
+  if (state.gameOver && !wasGameOver) {
+    record = updateRecord(state.score);
+  }
+
+  render(ctx, state, record);
 
   requestAnimationFrame(loop);
 }

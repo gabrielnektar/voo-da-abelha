@@ -3,7 +3,7 @@ import { barrierGapBottom } from "./gameLogic.js";
 
 const SCROLL_MARK_SPACING = 80;
 
-export function render(ctx, state) {
+export function render(ctx, state, record) {
   ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
   drawScrollMarks(ctx, state.scrollX);
@@ -12,7 +12,7 @@ export function render(ctx, state) {
   drawScore(ctx, state.score);
 
   if (state.gameOver) {
-    drawGameOverOverlay(ctx, state.score);
+    drawGameOverOverlay(ctx, state.score, record);
   }
 }
 
@@ -61,7 +61,7 @@ function drawScore(ctx, score) {
   ctx.fillText(String(Math.floor(score)), 16, 36);
 }
 
-function drawGameOverOverlay(ctx, score) {
+function drawGameOverOverlay(ctx, score, record) {
   ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
   ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
@@ -69,15 +69,16 @@ function drawGameOverOverlay(ctx, score) {
   ctx.textAlign = "center";
 
   ctx.font = "bold 32px sans-serif";
-  ctx.fillText("Game Over", CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 40);
+  ctx.fillText("Game Over", CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 50);
 
   ctx.font = "bold 22px sans-serif";
-  ctx.fillText(`Pontuação: ${Math.floor(score)}`, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
+  ctx.fillText(`Pontuação: ${Math.floor(score)}`, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 12);
+  ctx.fillText(`Recorde: ${Math.floor(record)}`, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 20);
 
   ctx.font = "18px sans-serif";
   ctx.fillText(
     "Clique ou pressione espaço para reiniciar",
     CANVAS_WIDTH / 2,
-    CANVAS_HEIGHT / 2 + 40,
+    CANVAS_HEIGHT / 2 + 60,
   );
 }
