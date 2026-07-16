@@ -36,13 +36,27 @@ const GROUND_GRASS_COLOR = "#5aa457";
 const GROUND_GRASS_HEIGHT = 8;
 const GROUND_TUFT_SPACING = 18;
 
-export function render(ctx, state, record) {
+const TITLE_FONT_FAMILY = "Work Sans";
+const TITLE_TEXT = "VÔO DA ABELHA";
+const SUBTITLE_TEXT = "THE GAME";
+const TITLE_COLOR = "#2b2b2b";
+const PLAY_BUTTON_RADIUS = 34;
+const PLAY_BUTTON_COLOR = "#ffd23f";
+const PLAY_BUTTON_BORDER_COLOR = "#2b2b2b";
+
+export function render(ctx, state, record, gameStarted) {
   drawSky(ctx, state.elapsedTime);
   drawStars(ctx, state.elapsedTime);
 
   drawClouds(ctx, state.scrollX);
   drawPollen(ctx, state.scrollX, state.elapsedTime);
   drawGround(ctx, state.scrollX);
+
+  if (!gameStarted) {
+    drawStartScreen(ctx);
+    return;
+  }
+
   state.barriers.forEach((barrier) => drawBarrier(ctx, barrier, state.elapsedTime));
   drawBee(ctx, state.beeY, state.elapsedTime);
   drawScore(ctx, state.score);
@@ -50,6 +64,45 @@ export function render(ctx, state, record) {
   if (state.gameOver) {
     drawGameOverOverlay(ctx, state.score, record);
   }
+}
+
+function drawStartScreen(ctx) {
+  const centerX = CANVAS_WIDTH / 2;
+
+  ctx.textAlign = "center";
+  ctx.fillStyle = TITLE_COLOR;
+
+  ctx.font = `800 44px "${TITLE_FONT_FAMILY}", sans-serif`;
+  ctx.letterSpacing = "3px";
+  ctx.fillText(TITLE_TEXT, centerX, CANVAS_HEIGHT / 2 - 80);
+
+  ctx.font = `600 18px "${TITLE_FONT_FAMILY}", sans-serif`;
+  ctx.letterSpacing = "6px";
+  ctx.fillText(SUBTITLE_TEXT, centerX, CANVAS_HEIGHT / 2 - 42);
+
+  ctx.letterSpacing = "0px";
+
+  drawPlayButton(ctx, centerX, CANVAS_HEIGHT / 2 + 50);
+}
+
+function drawPlayButton(ctx, x, y) {
+  ctx.fillStyle = PLAY_BUTTON_COLOR;
+  ctx.beginPath();
+  ctx.arc(x, y, PLAY_BUTTON_RADIUS, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.strokeStyle = PLAY_BUTTON_BORDER_COLOR;
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  ctx.fillStyle = PLAY_BUTTON_BORDER_COLOR;
+  const triangleSize = PLAY_BUTTON_RADIUS * 0.5;
+  ctx.beginPath();
+  ctx.moveTo(x - triangleSize * 0.5, y - triangleSize);
+  ctx.lineTo(x - triangleSize * 0.5, y + triangleSize);
+  ctx.lineTo(x + triangleSize, y);
+  ctx.closePath();
+  ctx.fill();
 }
 
 function drawSky(ctx, elapsedTime) {

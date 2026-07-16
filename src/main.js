@@ -13,8 +13,14 @@ const input = createInputController(canvas);
 
 let state = createInitialState();
 let record = getRecord();
+let gameStarted = false;
 
 input.onPress(() => {
+  if (!gameStarted) {
+    gameStarted = true;
+    return;
+  }
+
   if (state.gameOver) {
     state = createInitialState();
   }
@@ -26,14 +32,16 @@ function loop(time) {
   const dt = Math.min((time - lastTime) / 1000, MAX_DT);
   lastTime = time;
 
-  const wasGameOver = state.gameOver;
-  state = update(state, { holding: input.isHolding() }, dt);
+  if (gameStarted) {
+    const wasGameOver = state.gameOver;
+    state = update(state, { holding: input.isHolding() }, dt);
 
-  if (state.gameOver && !wasGameOver) {
-    record = updateRecord(state.score);
+    if (state.gameOver && !wasGameOver) {
+      record = updateRecord(state.score);
+    }
   }
 
-  render(ctx, state, record);
+  render(ctx, state, record, gameStarted);
 
   requestAnimationFrame(loop);
 }
