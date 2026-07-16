@@ -3,6 +3,7 @@ import {
   BARRIER_GAP_HEIGHT_INITIAL,
   BARRIER_GAP_MARGIN,
   BARRIER_GAP_SHRINK_DURATION,
+  BARRIER_REACHABILITY_FACTOR,
   BARRIER_SPACING,
   BARRIER_WIDTH,
   BEE_RADIUS,
@@ -169,7 +170,8 @@ function updateBarriers(barriers, frame, random, barriersSpawned) {
   }
 
   const hasBonus = (barriersSpawned + 1) % BONUS_BARRIER_INTERVAL === 0;
-  const newBarrier = spawnBarrier(random, elapsedTime, hasBonus);
+  const previousCenter = lastBarrier ? lastBarrier.gapTop + lastBarrier.gapHeight / 2 : null;
+  const newBarrier = spawnBarrier(random, frame, hasBonus, previousCenter);
   return { barriers: [...onScreen, newBarrier], spawnedNewBarrier: true };
 }
 
@@ -181,10 +183,9 @@ function currentGapHeight(elapsedTime) {
   return BARRIER_GAP_HEIGHT_INITIAL - (BARRIER_GAP_HEIGHT_INITIAL - BARRIER_GAP_HEIGHT) * shrinkProgress;
 }
 
-function spawnBarrier(random, elapsedTime, hasBonus) {
-  const gapHeight = currentGapHeight(elapsedTime);
-  const gapTopRandomSpan = CANVAS_HEIGHT - 2 * BARRIER_GAP_MARGIN - gapHeight;
-  const gapTop = BARRIER_GAP_MARGIN + random() * gapTopRandomSpan;
+function spawnBarrier(random, frame, hasBonus, previousCenter) {
+  const gapHeight = currentGapHeight(frame.elapsedTime);
+  const gapTop = randomReachableGapTop(random, gapHeight, frame.scrollSpeed, previousCenter);
 
   const barrier = {
     x: CANVAS_WIDTH,
@@ -197,6 +198,35 @@ function spawnBarrier(random, elapsedTime, hasBonus) {
   };
 
   return hasBonus ? { ...barrier, ...spawnBonusPollen(random, gapTop, gapHeight) } : barrier;
+}
+
+// Keeps the new gap reachable from the previous one: the bee can only cover
+// RISE_SPEED (== FALL_SPEED) px/s of vertical distance, and only has
+// BARRIER_SPACING / scrollSpeed seconds between one barrier's gap and the
+// next before it arrives. Without this, two unlucky consecutive barriers
+// (one gap near the top, the next near the bottom) could demand more
+// vertical speed than the bee can ever provide — an impossible pass.
+// BARRIER_REACHABILITY_FACTOR keeps some margin below the theoretical max,
+// since reaching it exactly would need frame-perfect, non-stop input.
+function randomReachableGapTop(random, gapHeight, scrollSpeed, previousCenter) {
+  const normalMin = BARRIER_GAP_MARGIN;
+  const normalMax = CANVAS_HEIGHT - BARRIER_GAP_MARGIN - gapHeight;
+
+  if (previousCenter === null) {
+    return normalMin + random() * (normalMax - normalMin);
+  }
+
+  const timeBetweenBarriers = BARRIER_SPACING / scrollSpeed;
+  const reachableDistance = RISE_SPEED * timeBetweenBarriers * BARRIER_REACHABILITY_FACTOR;
+
+  const min = Math.max(normalMin, previousCenter - reachableDistance - gapHeight / 2);
+  const max = Math.min(normalMax, previousCenter + reachableDistance - gapHeight / 2);
+
+  if (min >= max) {
+    return Math.min(Math.max(previousCenter - gapHeight / 2, normalMin), normalMax);
+  }
+
+  return min + random() * (max - min);
 }
 
 // Places a bonus opening inside whichever solid segment (top or bottom
