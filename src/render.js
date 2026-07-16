@@ -1,15 +1,21 @@
 import { BARRIER_WIDTH, BEE_RADIUS, BEE_X, CANVAS_HEIGHT, CANVAS_WIDTH } from "./constants.js";
 import { barrierGapBottom } from "./gameLogic.js";
 
-const SCROLL_MARK_SPACING = 80;
+// Must match the <canvas> CSS background in index.html (pre-JS fallback paint).
+const SKY_COLOR = "#bfe9ff";
+const CLOUD_COLOR = "#ffffff";
+const CLOUD_SPACING = 180;
+const CLOUD_PARALLAX_FACTOR = 0.5;
+const CLOUD_Y_POSITIONS = [70, 130, 100];
 const FLOWER_PETAL_COLORS = ["#ffb3c6", "#c9a0ff", "#ffb26b", "#a0d8ff", "#ff8fa3"];
 const FLOWER_CLUSTER_OFFSET = 26;
 const FLOWER_SIDE_OFFSET = 10;
 
 export function render(ctx, state, record) {
-  ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+  ctx.fillStyle = SKY_COLOR;
+  ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-  drawScrollMarks(ctx, state.scrollX);
+  drawClouds(ctx, state.scrollX);
   state.barriers.forEach((barrier) => drawBarrier(ctx, barrier));
   drawBee(ctx, state.beeY, state.elapsedTime);
   drawScore(ctx, state.score);
@@ -19,18 +25,28 @@ export function render(ctx, state, record) {
   }
 }
 
-function drawScrollMarks(ctx, scrollX) {
-  ctx.strokeStyle = "#8fd3ff";
-  ctx.lineWidth = 4;
+// Clouds drift right-to-left at a fraction of the scroll speed (parallax),
+// so they visibly speed up as the difficulty ramp increases scrollSpeed —
+// same signal as the barriers, just slower/further away.
+function drawClouds(ctx, scrollX) {
+  const parallaxX = scrollX * CLOUD_PARALLAX_FACTOR;
+  const firstTile = Math.floor((parallaxX - CLOUD_SPACING) / CLOUD_SPACING);
+  const lastTile = Math.ceil((parallaxX + CANVAS_WIDTH + CLOUD_SPACING) / CLOUD_SPACING);
 
-  const offset = scrollX % SCROLL_MARK_SPACING;
-  for (let x = CANVAS_WIDTH + offset; x > -SCROLL_MARK_SPACING; x -= SCROLL_MARK_SPACING) {
-    const drawX = x - offset;
-    ctx.beginPath();
-    ctx.moveTo(drawX, 0);
-    ctx.lineTo(drawX, CANVAS_HEIGHT);
-    ctx.stroke();
+  ctx.fillStyle = CLOUD_COLOR;
+  for (let tile = firstTile; tile <= lastTile; tile++) {
+    const screenX = tile * CLOUD_SPACING - parallaxX;
+    const y = CLOUD_Y_POSITIONS[((tile % CLOUD_Y_POSITIONS.length) + CLOUD_Y_POSITIONS.length) % CLOUD_Y_POSITIONS.length];
+    drawCloud(ctx, screenX, y);
   }
+}
+
+function drawCloud(ctx, x, y) {
+  ctx.beginPath();
+  ctx.arc(x, y, 16, 0, Math.PI * 2);
+  ctx.arc(x + 18, y - 8, 20, 0, Math.PI * 2);
+  ctx.arc(x + 38, y, 16, 0, Math.PI * 2);
+  ctx.fill();
 }
 
 function drawBarrier(ctx, barrier) {
