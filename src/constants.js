@@ -12,3 +12,8 @@ export const FALL_SPEED = 200;
 export const SCROLL_SPEED = 150;
 
 export const MAX_DT = 1 / 30;
+
+export const BARRIER_WIDTH = 60;
+export const BARRIER_GAP_HEIGHT = 160;
+export const BARRIER_GAP_MARGIN = 60;
+export const BARRIER_SPACING = 260;

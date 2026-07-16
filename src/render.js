@@ -1,4 +1,5 @@
-import { BEE_RADIUS, BEE_X, CANVAS_HEIGHT, CANVAS_WIDTH } from "./constants.js";
+import { BARRIER_WIDTH, BEE_RADIUS, BEE_X, CANVAS_HEIGHT, CANVAS_WIDTH } from "./constants.js";
+import { barrierGapBottom } from "./gameLogic.js";
 
 const SCROLL_MARK_SPACING = 80;
 
@@ -6,6 +7,7 @@ export function render(ctx, state) {
   ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
   drawScrollMarks(ctx, state.scrollX);
+  state.barriers.forEach((barrier) => drawBarrier(ctx, barrier));
   drawBee(ctx, state.beeY);
 
   if (state.gameOver) {
@@ -25,6 +27,14 @@ function drawScrollMarks(ctx, scrollX) {
     ctx.lineTo(drawX, CANVAS_HEIGHT);
     ctx.stroke();
   }
+}
+
+function drawBarrier(ctx, barrier) {
+  ctx.fillStyle = "#3fa34d";
+  ctx.fillRect(barrier.x, 0, BARRIER_WIDTH, barrier.gapTop);
+
+  const gapBottom = barrierGapBottom(barrier);
+  ctx.fillRect(barrier.x, gapBottom, BARRIER_WIDTH, CANVAS_HEIGHT - gapBottom);
 }
 
 function drawBee(ctx, beeY) {
