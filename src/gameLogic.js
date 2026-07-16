@@ -198,10 +198,11 @@ function spawnBarrier(random, elapsedTime, hasBonus) {
   return hasBonus ? { ...barrier, ...spawnBonusPollen(random, gapTop, gapHeight) } : barrier;
 }
 
-// Places a small bonus opening inside whichever solid segment (top or
-// bottom column) is chosen at random, always fitting within it: even the
-// tightest possible segment (BARRIER_GAP_MARGIN) comfortably fits
-// BONUS_GAP_HEIGHT plus margin on both sides.
+// Places a bonus opening inside whichever solid segment (top or bottom
+// column) is chosen at random, always fitting within it: BONUS_GAP_HEIGHT
+// plus margin on both sides exactly equals BARRIER_GAP_MARGIN, the smallest
+// a segment can ever be, so it always fits (with zero slack only in that
+// rare tightest case).
 function spawnBonusPollen(random, gapTop, gapHeight) {
   const gapBottom = gapTop + gapHeight;
   const bonusSide = random() < 0.5 ? "top" : "bottom";

@@ -297,7 +297,7 @@ describe("update", () => {
 
     expect(next.barriersSpawned).toBe(3);
     expect(next.barriers[0].bonusSide).toBe("top");
-    expect(next.barriers[0].bonusGapTop).toBe(87);
+    expect(next.barriers[0].bonusGapTop).toBe(80);
     expect(next.barriers[0].bonusCollected).toBe(false);
   });
 
